@@ -22,27 +22,54 @@ While Claude and Hermes are elite at coding and deep reasoning, they lack native
 
 ---
 
-## ❓ Do I need a Google AI Pro subscription, or can I use the Free Plan?
+## ❓ Plan Tiers: Free ($0) vs. Google AI Plus ($5/mo) vs. Google AI Pro ($20/mo)
 
 ### **You can use the Free Plan! No paid subscription is required.**
 
-Gemini Lens is designed so anyone with a standard, free Google account can plug and play without entering a credit card:
+Gemini Lens supports all three Google ecosystem tiers, allowing users to start for $0 and scale up as their workload grows:
 
-| Resource / Feature | 🆓 Free Plan (Standard Google Account) | 💎 Google AI Pro / Subscription ($20/mo) |
-|---|---|---|
-| **Monthly Cost** | **$0 / Free** (No credit card needed) | **$20 / month** (Google One AI Premium) |
-| **Daily Request Limit** | **Up to 1,500 requests / day** (15 req/min) | 🚀 High-throughput priority queue |
-| **Max Context Window** | **1,000,000 tokens** per query | **2,000,000 tokens** per query |
-| **Video Analysis** | **Up to ~1 hour video per query** (~900k tokens) | High-speed processing for long videos |
-| **Audio Understanding** | **Hours of audio** (speech + tone + sounds) | Priority high-throughput processing |
-| **Text-to-Speech (TTS)** | ✅ **Free** (Gemini Audio + Neural Fallback) | Priority generation queue / credits |
-| **Document Reading** | **~500-page PDFs / massive codebases** | Full 2M-token document digests |
-| **Imagen 3 Image Gen** | Supported (standard rate caps, ~30–50/day) | High-throughput generation volume |
-| **Gemini 3.8 Flash** | **1,500 calls / day** (ultra-fast) | Priority queue throughput |
-| **Gemini 3.1 Pro** | ~50 reasoning queries / day | 🧠 Uncapped deep reasoning & complex proofs |
-| **Setup Methods** | `agy login` (Free) OR `GEMINI_API_KEY` (Free) | `agy login` with subscribed Google account |
+| Resource / Feature | 🆓 Free Plan | ⚡ Google AI Plus (~$5/mo) | 💎 Google AI Pro ($20/mo) |
+|---|---|---|---|
+| **Monthly Cost** | **$0 / Free** (No credit card) | **~$5 / month** (Starter AI Tier) | **$20 / month** (Google One AI Premium) |
+| **Daily Request Limit** | **Up to 1,500 queries / day** (15 req/min) | **3,000+ queries / day** (30 req/min) | 🚀 **High-throughput enterprise priority** |
+| **Max Context Window** | **1,000,000 tokens** per query | **1,000,000 tokens** per query | **2,000,000 tokens** per query |
+| **Video Understanding** | **Up to ~1 hr video / query** (~900k tokens) | **Up to ~1 hr video / query** (faster queue) | **Up to ~2 hrs video in a single query** |
+| **Daily Video Capacity** | **~3–5 hours total video / day** | **~10–15 hours total video / day** | **Continuous automated batch video** |
+| **Text-to-Speech (TTS)** | **~20–40 mins audio / day** + Neural | **~2–3 hours finished audio / day** | **Unlimited voiceovers & audiobooks** |
+| **Imagen 3 Image Gen** | **~30–50 images / day** (standard caps) | **~150–200 images / day** | **500+ images / day** (high-volume) |
+| **Document Reading** | **~500-page PDFs / 35k lines code** | **~500-page PDFs** (higher concurrency) | **1,000+ page docs / 70k lines code** |
+| **Gemini 3.8 Flash** | **1,500 calls / day** (fast) | **3,000+ calls / day** (faster) | 🚀 **Top priority queue** |
+| **Gemini 3.1 Pro** | **~50 reasoning queries / day** | **~200–300 queries / day** | 🧠 **Uncapped deep reasoning** |
+| **Authentication** | `agy login` (Free) OR `GEMINI_API_KEY` | `agy login` OR Google Cloud Pay-As-You-Go | `agy login` with subscribed account |
 
-> **Summary:** A free user gets **1,500 requests per day** and **1 Million tokens per request**. You can analyze dozens of videos, podcasts, and massive documents every single day without paying a cent. The $20/month plan is only needed if you require uncapped Gemini 3.1 Pro deep-reasoning or extreme high-concurrency workloads.
+---
+
+## 🎯 Real-World Production Limits: What Can You Actually Build?
+
+### 1. 🎬 Video Understanding (`gemini_video`)
+* **On Free ($0):** Analyze **20–30 short-form clips** (TikToks, Reels, YouTube Shorts) or **3–5 full 20-minute YouTube tutorials** per day. A single video can be up to 45–60 minutes long without clipping.
+* **On AI Plus (~$5/mo):** Analyze **50+ short-form clips** or **10–15 full YouTube videos** daily with halved processing wait times.
+* **On AI Pro ($20/mo):** Run continuous video QA pipelines. Ingest an entire **2-hour raw podcast recording or gameplay stream in a single prompt** (utilizing the full 2M token window).
+
+### 2. 🗣️ Text-to-Speech Generation (`gemini_text_to_speech`)
+* **On Free ($0):** Generate **15,000–30,000 spoken words per day** (about 20–40 minutes of finished narration) via Gemini Audio, plus unlimited keyless generation via the built-in Neural Fallback engine.
+* **On AI Plus (~$5/mo):** Generate **100,000+ spoken words per day** (roughly 2–3 hours of finished audio daily) for daily YouTube automation, course lectures, and multi-language narrations.
+* **On AI Pro ($20/mo):** Uncapped, high-concurrency generation for full audiobook publishing, interactive voice agents, and real-time gaming dialog.
+
+### 3. 🎨 Imagen 3 Image Generation (`gemini_generate_image`)
+* **On Free ($0):** Generate **~30–50 high-resolution images daily** across all 7 aspect ratios. Perfect for blog post headers, app icons, and concept art iterations.
+* **On AI Plus (~$5/mo):** Generate **~150–200 images daily** with faster queue times. Ideal for social media content creation and website mockup variants.
+* **On AI Pro ($20/mo):** Generate **500+ images daily**. Perfect for game studios generating hundreds of sprite textures, marketing agencies running A/B ad creative batches, and rapid design sprints.
+
+### 4. 📚 Document & Codebase Digestion (`gemini_read_document`)
+* **On Free ($0):** Ingest up to **1,000,000 tokens** (~750,000 words) per query. That is an entire 500-page book, an entire company HR manual, or a 35,000-line code repository in a single shot.
+* **On AI Plus (~$5/mo):** Process multiple 1M-token documents in parallel without hitting concurrency blocks.
+* **On AI Pro ($20/mo):** Double the capacity to **2,000,000 tokens** (~1.5M words). Ingest massive multi-repo architectures, giant SQLite crash dumps, or 1,000+ page technical specifications.
+
+### 5. 🧠 Gemini 3.1 Pro Reasoning Delegation (`ask_gemini_pro`)
+* **On Free ($0):** ~50 deep-thinking architectural reviews per day. Ideal for getting a reliable second opinion when Claude or Hermes hits a complex logic bug.
+* **On AI Plus (~$5/mo):** ~200–300 deep reasoning queries per day with priority response.
+* **On AI Pro ($20/mo):** Uncapped deep reasoning for continuous architectural validation, formal proofs, and complex mathematical algorithms.
 
 ---
 
