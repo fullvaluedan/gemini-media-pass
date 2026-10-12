@@ -27,17 +27,20 @@ While Claude and Hermes are elite at coding and reasoning, they lack native vide
 
 Gemini Lens is designed so anyone with a standard, free Google account can plug and play:
 
-| Feature | 🆓 Free Plan (Standard Google Account) | 💎 Google AI Pro / Antigravity Subscription |
+| Feature | 🆓 Free Plan (Standard Google Account) | 💎 Google AI Pro / Subscription ($20/mo) |
 |---|---|---|
-| **Cost** | **$0 / Free** (No credit card needed) | Included with active Google subscription |
-| **Video & Vision Analysis** | ✅ Full access (within standard daily quota) | ✅ High throughput & priority queue |
-| **Audio & Document Reading** | ✅ Full access (up to 2M tokens) | ✅ High throughput |
-| **Imagen Image Generation** | ✅ Supported (subject to daily rate caps) | ✅ High generation quota |
-| **Gemini 3.8 Flash** | ✅ Fast, generous daily limits | ✅ High-speed priority |
-| **Gemini 3.1 Pro** | ⚠️ Limited daily reasoning calls | 🚀 Uncapped deep reasoning |
-| **Setup Methods** | `agy login` (Free) OR `GEMINI_API_KEY` (Free) | `agy login` with subscribed account |
+| **Monthly Cost** | **$0 / Free** (No credit card needed) | **$20 / month** (Google One AI Premium) |
+| **Daily Request Limit** | **Up to 1,500 requests / day** (15 req/min) | 🚀 High-throughput priority queue |
+| **Max Context Window** | **1,000,000 tokens** per query | **2,000,000 tokens** per query |
+| **Video Analysis** | **Up to ~1 hour video per query** (~900k tokens) | High-speed processing for long videos |
+| **Audio Understanding** | **Hours of audio** (speech + tone + sounds) | Priority high-throughput processing |
+| **Document Reading** | **~500-page PDFs / massive codebases** | Full 2M-token document digests |
+| **Imagen 3 Image Gen** | Supported (standard rate caps, ~30-50/day) | High-throughput generation volume |
+| **Gemini 3.8 Flash** | **1,500 calls / day** (ultra-fast) | Priority queue throughput |
+| **Gemini 3.1 Pro** | ~50 reasoning queries / day | 🧠 Uncapped deep reasoning & complex proofs |
+| **Setup Methods** | `agy login` (Free) OR `GEMINI_API_KEY` (Free) | `agy login` with subscribed Google account |
 
-> **Summary:** If you're on a standard free Google account, Gemini Lens works out of the box with zero cost. If you have an active Google AI Pro / Antigravity subscription, Gemini Lens automatically unlocks higher rate limits and unrestricted Pro reasoning.
+> **Summary:** A free user gets **1,500 requests per day** and **1 Million tokens per request**. You can analyze dozens of videos, podcasts, and massive documents every single day without paying a cent. The $20/month plan is only needed if you require uncapped Gemini 3.1 Pro deep-reasoning or extreme high-concurrency workloads.
 
 ---
 
