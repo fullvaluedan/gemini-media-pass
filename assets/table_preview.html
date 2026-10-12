@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif;
+    background-color: #ffffff;
+    color: #37352f;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .container {
+    width: 1080px;
+    background: #ffffff;
+    border: 1px solid #e9e9e8;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    padding: 32px 36px 40px;
+  }
+  .header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #edece9;
+    padding-bottom: 18px;
+  }
+  .title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .icon {
+    font-size: 28px;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #787774;
+    font-weight: 500;
+  }
+  .notion-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-free {
+    background-color: #eef6ec;
+    color: #2b7832;
+  }
+  .tag-plus {
+    background-color: #ebf5fb;
+    color: #1b6ca8;
+  }
+  .tag-pro {
+    background-color: #f5eefb;
+    color: #6c2ba8;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    table-layout: fixed;
+  }
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    background: #fbfbfa;
+    border-bottom: 1px solid #e3e2de;
+    border-top: 1px solid #e3e2de;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #787774;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  th:first-child {
+    width: 25%;
+    border-left: 1px solid #e3e2de;
+    border-top-left-radius: 4px;
+  }
+  th:nth-child(2) { width: 25%; }
+  th:nth-child(3) { width: 25%; }
+  th:last-child {
+    width: 25%;
+    border-right: 1px solid #e3e2de;
+    border-top-right-radius: 4px;
+  }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #edece9;
+    border-right: 1px solid #edece9;
+    vertical-align: middle;
+    line-height: 1.45;
+  }
+  td:first-child {
+    font-weight: 600;
+    color: #37352f;
+    background-color: #fafaf9;
+    border-left: 1px solid #edece9;
+  }
+  tr:hover td {
+    background-color: #fcfcfc;
+  }
+  tr:hover td:first-child {
+    background-color: #f7f7f5;
+  }
+  .badge-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cost-huge {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .free-cost { color: #2b7832; }
+  .plus-cost { color: #1b6ca8; }
+  .pro-cost { color: #6c2ba8; }
+  .highlight-bold {
+    font-weight: 600;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #f1f1ef;
+    color: #5a5a58;
+  }
+  .footer-note {
+    margin-top: 18px;
+    font-size: 12px;
+    color: #787774;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="title-group">
+      <span class="icon">🎟️</span>
+      <div>
+        <div class="title">Gemini Media Pass — Plan Comparison</div>
+        <div class="subtitle">Unified Google Multimodal MCP Suite (Video, Veo, Stitch, Music, Audio, Vision, 2M Docs)</div>
+      </div>
+    </div>
+    <span class="pill">Model Context Protocol</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Capability / Feature</th>
+        <th>
+          <div class="badge-cell">
+            <span class="notion-tag tag-free">Free Plan</span>
+          </div>
+        </th>
+        <th>
+          <div class="badge-cell">
+            <span class="notion-tag tag-plus">Google AI Plus</span>
+          </div>
+        </th>
+        <th>
+          <div class="badge-cell">
+            <span class="notion-tag tag-pro">Google AI Pro</span>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Monthly Cost</td>
+        <td><span class="cost-huge free-cost">$0 / Free</span> (No credit card)</td>
+        <td><span class="cost-huge plus-cost">~$5 / month</span> (Starter Tier)</td>
+        <td><span class="cost-huge pro-cost">$20 / month</span> (Google One AI)</td>
+      </tr>
+      <tr>
+        <td>Daily Request Limit</td>
+        <td><strong>Up to 1,500 queries / day</strong> (15 RPM)</td>
+        <td><strong>3,000+ queries / day</strong> (30 RPM)</td>
+        <td><strong>Priority Enterprise Queue</strong></td>
+      </tr>
+      <tr>
+        <td>Max Context Window</td>
+        <td>1,000,000 tokens / prompt</td>
+        <td>1,000,000 tokens / prompt</td>
+        <td><strong>2,000,000 tokens</strong> / prompt</td>
+      </tr>
+      <tr>
+        <td>Video Understanding</td>
+        <td>Up to ~1h video per prompt (~3-5h/day)</td>
+        <td>Up to ~1h video (faster queue, ~10-15h/day)</td>
+        <td><strong>Up to ~2h raw video in 1 prompt</strong></td>
+      </tr>
+      <tr>
+        <td>Google Veo 3.1 AI Video</td>
+        <td>Draft generation limits</td>
+        <td>Priority render queue</td>
+        <td><strong>Included monthly Veo credit pool</strong></td>
+      </tr>
+      <tr>
+        <td>Text-to-Speech (TTS)</td>
+        <td>~20–40 mins audio/day + Neural</td>
+        <td>~2–3 hours finished audio / day</td>
+        <td><strong>Unlimited voiceovers & audiobooks</strong></td>
+      </tr>
+      <tr>
+        <td>Flow Music (MusicFX)</td>
+        <td>Background loops, ambient beats</td>
+        <td>Faster generation queue</td>
+        <td>High-throughput soundtrack scoring</td>
+      </tr>
+      <tr>
+        <td>Imagen 3 Image Gen</td>
+        <td>~30–50 images / day (7 aspects)</td>
+        <td>~150–200 images / day</td>
+        <td><strong>500+ images / day</strong> (High volume)</td>
+      </tr>
+      <tr>
+        <td>Google Stitch UI Studio</td>
+        <td>Screen layouts & Tailwind code</td>
+        <td>Multi-screen parallel projects</td>
+        <td><strong>Unlimited design systems & tokens</strong></td>
+      </tr>
+      <tr>
+        <td>Document & Code Reading</td>
+        <td>~500-page PDFs / 35,000 lines code</td>
+        <td>~500-page PDFs (higher concurrency)</td>
+        <td><strong>1,000+ pages / 70,000 lines code</strong></td>
+      </tr>
+      <tr>
+        <td>Gemini 3.8 Flash</td>
+        <td>1,500 calls / day (ultra-fast)</td>
+        <td>3,000+ calls / day (priority)</td>
+        <td>Top-tier priority queue</td>
+      </tr>
+      <tr>
+        <td>Gemini 3.1 Pro Reasoning</td>
+        <td>~50 reasoning queries / day</td>
+        <td>~200–300 queries / day</td>
+        <td><strong>Uncapped deep reasoning</strong></td>
+      </tr>
+      <tr>
+        <td>Authentication</td>
+        <td>Google login (Free) OR API Key</td>
+        <td>Google login OR Cloud Pay-As-You-Go</td>
+        <td><code>gemini-media-pass-login</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer-note">
+    <span>Works with Claude Code, Claude Desktop, Hermes, Codex, and Cursor</span>
+    <span>100% Open Source • 24 Tools</span>
+  </div>
+</div>
+
+</body>
+</html>

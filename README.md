@@ -85,7 +85,7 @@ Gemini Media Pass supports all three Google ecosystem tiers, allowing users to s
 | **Authentication** | Google login (Free) OR `GEMINI_API_KEY` | Google login OR Cloud Pay-As-You-Go | `gemini-media-pass-login` with subscribed account |
 
 <p align="center">
-  <img src="assets/comparison_chart.jpg" alt="Gemini Media Pass Comparison Chart" width="100%">
+  <img src="assets/comparison_chart.png" alt="Gemini Media Pass Comparison Chart" width="100%">
 </p>
 
 ---
