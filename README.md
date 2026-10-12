@@ -213,7 +213,7 @@ Add Gemini Media Pass to your `claude_desktop_config.json`:
     "gemini-media-pass": {
       "command": "uvx",
       "args": [
-        "git+https://github.com/<your-username>/gemini-media-pass"
+        "git+https://github.com/fullvaluedan/gemini-media-pass"
       ]
     }
   }
@@ -225,7 +225,7 @@ Add Gemini Media Pass to your `claude_desktop_config.json`:
 ### 3. Configure Claude Code (CLI)
 
 ```bash
-claude mcp add gemini-media-pass -- uvx git+https://github.com/<your-username>/gemini-media-pass
+claude mcp add gemini-media-pass -- uvx git+https://github.com/fullvaluedan/gemini-media-pass
 ```
 
 ---
@@ -235,7 +235,7 @@ claude mcp add gemini-media-pass -- uvx git+https://github.com/<your-username>/g
 In your IDE's **Settings** -> **Features** -> **MCP Servers** -> **Add New MCP Server**:
 - **Name:** `gemini-media-pass`
 - **Type:** `command`
-- **Command:** `uvx git+https://github.com/<your-username>/gemini-media-pass`
+- **Command:** `uvx git+https://github.com/fullvaluedan/gemini-media-pass`
 
 ---
 
@@ -247,7 +247,7 @@ mcp_servers:
   gemini_media_pass:
     command: uvx
     args:
-      - "git+https://github.com/<your-username>/gemini-media-pass"
+      - "git+https://github.com/fullvaluedan/gemini-media-pass"
 ```
 
 ---
@@ -255,7 +255,7 @@ mcp_servers:
 ## 📦 Local Development
 
 ```bash
-git clone https://github.com/<your-username>/gemini-media-pass.git
+git clone https://github.com/fullvaluedan/gemini-media-pass.git
 cd gemini-media-pass
 pip install -e .
 ```
