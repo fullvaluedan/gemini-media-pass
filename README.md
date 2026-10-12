@@ -83,48 +83,72 @@ Gemini Media Pass supports all three Google ecosystem tiers, allowing users to s
 
 ---
 
-## 🎯 Plain-English Explainer: What Do These Numbers Actually Mean?
+## 🎯 Plain-English Explainer: 3 Everyday Examples for Every Feature
 
-If you're not an AI researcher, terms like "1,500 queries", "2 million tokens", or "draft limits" sound like gibberish. Here is what every feature and limit actually gives you in plain English:
+If terms like "tokens", "RPM", and "context windows" sound like AI jargon, here is what each feature actually does for you in everyday life:
 
-### 1. 💬 Daily Questions & Prompts ("1,500 Queries")
-* **What it means:** A "query" is each time Claude or you ask Gemini a question, inspect an image, run a code audit, or generate speech.
-* **Real-world capacity:** **1,500 queries every single day** means you can ask roughly 1 question every 4 seconds continuously, or over 60 tasks an hour around the clock. For standard daily development and creative work, it is virtually impossible for a regular person to exhaust this on the free tier.
+---
 
-### 2. 🧠 Memory per Prompt (Tokens & Context Window)
-* **What it means:** AI models measure reading memory in "tokens" (roughly 750 words per 1,000 tokens).
-* **1 Million tokens:** Equal to **750,000 words** — that is longer than the entire *Lord of the Rings* trilogy + *The Hobbit* combined, or **~1,500 printed book pages**, or **~35,000 lines of code** in a single prompt.
-* **2 Million tokens:** Equal to **1,500,000 words** — ~3,000 book pages, 70,000+ lines of code, or 2 full hours of raw video in a single prompt.
+### 1. 🧠 Memory & Context (1M to 2M Tokens)
+*The Problem with Most AIs:* After chatting for a while, most AIs get "brain fog." They forget what you told them an hour ago, contradict earlier rules, or the app forces a "compact session" summary that erases details. As memory fills up, the AI gets dumber.
 
-### 3. 💸 Claude Token Saver (Document & Code Reading)
-* **Why this is massive:** Claude has strict context windows and expensive token fees. If you paste a 300-page PDF or 30,000 lines of code into Claude, you blow your Claude limits, risk context crashes, and burn your subscription.
-* **How Gemini Media Pass fixes this:** Claude tells Gemini: *"Read this 500-page document and extract the 3 critical security vulnerabilities."* Gemini digests the entire file inside its massive 1M–2M window for **$0**, and sends back a clean 200-word answer to Claude. You burn almost **zero Claude tokens** and get instant answers for free.
+* 🏟️ **The Stadium Whiteboard vs. The Sticky Note:** Most AIs have a tiny desk covered in sticky notes that get thrown away as new ones arrive. Gemini gives you a football-stadium-sized whiteboard where every single instruction, character rule, or code architecture stays permanently in view.
+* 🧘 **No AI Dementia / No Session Compacting:** Work on a creative writing project, a business plan, or a software app for days in the same chat without having to remind the AI who the characters are or what was decided yesterday.
+* 📚 **"Drop the Entire Library In":** Drag and drop a 500-page employee handbook, a legal lease, or an entire app codebase in one prompt and ask: *"Find every clause that mentions cancellation penalties."*
 
-### 4. 👁️ Video Understanding (Scene & Audio Inspection)
-* **Per prompt limit:** You can attach a **single raw video up to 1 hour long** directly to a prompt. Gemini watches every frame, reviews camera motion, listens to spoken dialogue, checks pacing, and timestamps events.
-* **Daily limit:** Free accounts have a daily token allowance that comfortably supports **3 to 5 full one-hour video reviews every day**. On Plus/Pro, you can analyze 10 to 30+ hours of video daily.
+---
 
-### 5. 🎬 Veo 3.1 AI Video Generation & Credit Math
-* **How credits work:**
-  * Generating 1 new cinematic video (5s–8s clip) costs **10 credits**.
-  * Extending an existing video (+8 seconds) costs **5 to 10 credits**.
-* **Free Tier:** Includes a **Starter Trial of 10–20 credits** (~1 to 2 draft test videos).
-* **Google AI Plus (~$5/mo):** Gives **~100 credits / month** (~10 full videos or 20 clip extensions).
-* **Google AI Pro ($20/mo):** Gives **~1,000 credits / month** (~100 full videos or 200 extensions) with priority high-speed render queues.
+### 2. 💸 The "Claude Token Saver" (Document & Code Reading)
+*The Problem:* Claude is brilliant, but expensive with tight message limits. If you upload a 200-page PDF directly to Claude, you burn through your usage limit after 2 or 3 prompts and get locked out until 4:00 PM.
 
-### 6. 🗣️ Text-to-Speech (Voice Generation)
-* **Free Tier:** Produces **20–40 minutes of natural human speech daily** using 5 Gemini expressive voice personas (`Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`), plus unlimited neural voice synthesis through the built-in fallback engine.
-* **AI Plus / Pro:** Generates 2–3 hours to unlimited narration per day for full audiobooks, YouTube voiceovers, and podcasts.
+* 👔 **The CEO & The Speed-Reading Assistant:** Think of Claude as a $500/hr executive, and Gemini as an Olympic speed-reader assistant with free coffee. You don't make the CEO spend 4 hours reading a 400-page financial filing. Gemini reads the entire stack for free, and hands Claude a 1-page summary. The CEO stays fresh and ready for high-level work.
+* 🛡️ **Usage Cap Insurance:** By having Gemini read heavy files off-meter, your Claude message allowance isn't wasted on reading raw text. Claude stays available all day long for real brainstorming and writing.
+* 💰 **Zero Dollar Bills:** Pasting 200,000 tokens into Claude can cost $0.60 to $3.00 on an API key. Gemini does that exact reading job for **$0.00**.
 
-### 7. 🎵 Flow Music (MusicFX)
-* **Free Tier:** Generates **30-second seamless music loops & ambient beats** — ideal for YouTube video background music, game sound loops, and podcast intro stingers.
-* **AI Plus / Pro:** Generates **1–2 minute full track compositions**, multi-layer arrangements, and studio stem exports with high-speed rendering.
+---
 
-### 8. 📱 Google Stitch UI Studio
-* **What it does:** Converts natural language prompts into responsive mobile and desktop screen mockups and outputs clean Tailwind CSS, React, and HTML code.
-* **Free Tier:** **5 screen designs / day** with full code export.
-* **AI Plus (~$5/mo):** **25 screen designs / day** with multi-screen connected user flows.
-* **AI Pro ($20/mo):** **Unlimited screen designs**, custom design systems, and reusable token themes.
+### 3. 👁️ Video Understanding (1-Hour File vs. Daily Quota)
+*The Distinction:* **1-Hour File per Prompt** is how long a *single* video can be. **3 to 5 Hours Daily** is how many *total* hours of video you can send in a 24-hour day.
+
+* 🎬 **The YouTube / Podcast Editor:** You recorded a 50-minute podcast. You don't have to slice it into ten 5-minute files. Drop the entire 50-minute `.mp4` into the prompt: *"Find the 3 funniest moments, give me exact timestamps, and write short viral titles for TikTok."*
+* 📹 **The Security Camera Inspector:** Drop a 45-minute continuous security camera recording in and ask: *"At what exact minute does the delivery truck arrive, and what color was the driver's jacket?"* Gemini watches every frame and gives the exact timestamp.
+* 📅 **Daily Free Workload:** Review four 45-minute lecture recordings or five 30-minute tutorials *every single day* on the free tier without paying a dime.
+
+---
+
+### 4. 🎬 Veo 3.1 AI Video (Arcade Token Math)
+*How Credits Work:* Think of credits like arcade tokens: **1 new video (5–8 sec) = 10 tokens**. **Extending a clip (+8 sec) = 5 to 10 tokens**.
+
+* 🕹️ **The Arcade Machine:** Free includes **10–20 tokens** (1–2 test clips). Google AI Plus ($5/mo) gives **~100 tokens/mo** (~10 complete scenes). Google AI Pro ($20/mo) gives **~1,000 tokens/mo** (~100 scenes—enough to storyboard a whole short film).
+* ☕ **Instant B-Roll Creator:** Making a video about coffee shops? Prompt: *"Cinematic slow-motion shot of espresso pouring into a glass cup with morning sunlight."* 60 seconds later, you have 1080p footage instead of buying $50 Shutterstock footage.
+* 🔄 **The Scene Extender (No Awkward Cuts):** Love an 8-second video of a car driving in the rain? Hit **extend** twice to turn it into a continuous 24-second seamless tracking shot without changing the car or background.
+
+---
+
+### 5. 🎵 Flow Music (MusicFX): Free vs. Paid
+*The Difference:* Free generates background loops that seamlessly repeat. Paid generates arranged songs that build up and end.
+
+* 🎮 **The Streamer & Game Loop (Free):** Prompt: *"Lofi chillhop beats with soft rain and mellow piano."* You get a seamless 30-second loop that repeats forever in your game or stream with zero copyright strikes.
+* 🎶 **The YouTube Intro / Outro Track (Paid):** Generate an energetic 2-minute synthwave song that starts soft, builds up to a beat drop, and fades out cleanly for your video intro and outro.
+* 🛡️ **100% Royalty-Free:** Unlike using Spotify tracks that get your videos muted or demonetized, every track is generated fresh and safe to monetize anywhere.
+
+---
+
+### 6. 📱 Google Stitch UI Studio (Design to Code)
+*What It Does:* Converts text descriptions or napkin sketches into real, interactive mobile and desktop screens and outputs clean code.
+
+* ✍️ **Napkin Sketch to Working App:** Type: *"Design an Airbnb listing card for a mountain cabin with a photo gallery, star rating, price per night, and a 'Book Now' button."* It hands you actual React and Tailwind CSS code you can paste into your project.
+* ⏱️ **The 5-Minute Client Pitch:** A client asks for a fitness app idea. Instead of spending 8 hours dragging boxes in Figma, prompt Stitch to generate 5 mobile screens (Login, Activity, Workouts, Profile, Checkout) and show them interactive mockups in 10 minutes.
+* 🎨 **Free (5 screens/day) vs. Pro (Unlimited Apps):** Free gives you 5 screen mockups a day for weekend side-projects. Pro gives you unlimited screens and keeps colors, fonts, and button styles consistent across a whole 50-screen application.
+
+---
+
+### 7. 🗣️ Text-to-Speech (Gemini Expressive Voice)
+*What It Does:* Converts written text into expressive, realistic human speech.
+
+* 🎧 **Turn Articles into Personal Podcasts:** Don't have time to read a 15-page article? Have Gemini read it in the `Puck` or `Aoede` voice, save it as an MP3, and listen while driving or doing dishes.
+* 🎙️ **Faceless YouTube Channel Voiceovers:** Write a video script, run `gemini_text_to_speech`, and get clean, professional studio narration in seconds with no microphone needed.
+* 🎭 **Real Human Expression:** These voices pause naturally for punctuation, whisper when telling a secret, and inflect their pitch like real human voice actors instead of robotic 2010 navigation voices.
 
 ---
 
