@@ -158,6 +158,9 @@ async def gemini_text_to_speech(
     """Generate spoken audio from text using Gemini Audio / Neural Speech."""
     return await execute_tts(text, voice, output_path, style_instruction)
 
+from .flow import register_flow_tools
+register_flow_tools(mcp)
+
 def main():
     """Runs the MCP server over stdio transport."""
     asyncio.run(mcp.run_stdio_async())

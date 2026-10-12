@@ -86,19 +86,33 @@ Claude cannot read video files natively. In order for Claude to "see" a video, f
 
 ---
 
-## 🛠️ Complete Tool Inventory (9 Tools)
+## 🛠️ Complete Tool Inventory (14 Tools)
 
+### 👁️ Multimodal Understanding & Reasoning (Gemini Pro / Flash)
 | Tool | Parameters | Description | Best For |
 |---|---|---|---|
 | `gemini_video` | `video_path`, `question` | Watch & analyze video files (`.mp4`, `.mov`, `.webm`, `.mkv`). Inspects temporal scene flow, cut pacing, B-roll timing, camera movement, and on-screen text. | Gameplay reviews, video edit critiques, bug screencasts, tutorial breakdowns. |
-| `gemini_text_to_speech` | `text`, `voice`, `output_path`, `style_instruction` | Convert text and scripts into high-quality spoken audio (`.mp3` / `.wav`) using Gemini multimodal audio output or neural speech. Supports voices: `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`. | Voiceovers, tutorial narration, accessibility, automated podcast reads. |
-| `gemini_generate_image` | `prompt`, `aspect_ratio`, `image_name` | Generate photorealistic images and concept art via Google Imagen. Supports aspect ratios: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`. | UI mockups, game concept art, website banners, social thumbnails. |
-| `gemini_audio` | `audio_path`, `question` | Listen to and analyze raw audio (`.mp3`, `.wav`, `.m4a`). Transcribes speech, critiques vocal delivery/pacing, identifies emotion/tone, and flags background sounds. | Podcast editing, vocal delivery coaching, sound effect inspection. |
 | `gemini_vision` | `image_path`, `question` | Inspect UI screenshots, wireframes, architectural diagrams, and photos with high-precision multimodal vision. | Frontend bug hunting, diagram analysis, UI comparison against design specs. |
+| `gemini_audio` | `audio_path`, `question` | Listen to and analyze raw audio (`.mp3`, `.wav`, `.m4a`). Transcribes speech, critiques vocal delivery/pacing, identifies emotion/tone, and flags background sounds. | Podcast editing, vocal delivery coaching, sound effect inspection. |
 | `gemini_read_document` | `file_path`, `question` | Ingest massive documents, books, compliance manuals, and logs using Gemini's 2,000,000 token context window. | Giant log analysis, legal/tax document reviews, massive code repositories. |
 | `gemini_multimodal_inspect` | `file_path`, `question` | Universal router: automatically inspects any media file (video, audio, image, PDF, or code) and returns a detailed analysis. | Quick inspection when file type varies. |
 | `ask_gemini_pro` | `prompt` | Delegate complex tasks to Google Gemini 3.1 Pro. Deep multi-step reasoning, mathematical proofs, alternative architecture options, and second opinions. | Complex algorithm validation, refactoring architecture, code second opinions. |
 | `ask_gemini_flash` | `prompt` | High-speed task delegation to Google Gemini 3.8 Flash. Low latency, rapid extraction, and batch operations. | Fast JSON extraction, bulk text summarization, rapid classifications. |
+
+### 🎙️ Voice & Creative Generation
+| Tool | Parameters | Description | Best For |
+|---|---|---|---|
+| `gemini_text_to_speech` | `text`, `voice`, `output_path`, `style_instruction` | Convert text and scripts into high-quality spoken audio (`.mp3` / `.wav`) using Gemini multimodal audio output or neural speech. Supports voices: `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`. | Voiceovers, tutorial narration, accessibility, automated podcast reads. |
+| `gemini_generate_image` | `prompt`, `aspect_ratio`, `image_name` | Generate photorealistic images and concept art via Google Imagen across 7 aspect ratios (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`). | UI mockups, game concept art, website banners, social thumbnails. |
+
+### 🎬 Google Flow: Veo 3.1 AI Video Studio
+| Tool | Parameters | Description | Best For |
+|---|---|---|---|
+| `flow_generate_video` | `prompt`, `orientation`, `duration`, `model`, `mode`, `initial_frame`, `end_frame` | Generate cinematic AI videos using Google Flow (**Veo 3.1** & **Omni Flash** with native audio). Supports `9:16` vertical & `16:9` widescreen, 4s/6s/8s/10s, Text-to-Video and Image-to-Video. Feeds live credit balances. | Cinematic video clips, YouTube Shorts, TikToks, B-roll generation. |
+| `flow_extend_video` | `media_id`, `prompt`, `project_id`, `orientation` | Extends an existing Google Flow video by an extra +8 seconds with continuous motion and sound. | Long-form story scenes, continuous narrative clips. |
+| `flow_get_credits` | `force_refresh` | Check live Google Flow credit balance, monthly subscription pool, and daily burn rate with milestone alerts. | Real-time budget monitoring before launching batch renders. |
+| `flow_list_models` | None | Displays all available video models (`veo-fast`, `veo-quality`, `veo-lite`, `omni-flash`) and their credit costs. | Model capability discovery. |
+| `flow_auth_status` | None | Checks Google Flow session health and verifies the connected Google account. | Diagnostics and connection verification. |
 
 ---
 
@@ -123,6 +137,12 @@ Gemini Lens uses a dual-engine approach to ensure 100% reliable audio generation
 ---
 
 ## 🚀 Quickstart & Setup
+
+> **Note on Google Flow (Veo 3.1):** The Gemini multimodal tools (video reading, vision, audio, TTS, 2M docs) work automatically out of the box. If you also want to generate AI videos via Google Flow, simply run the one-time interactive login:  
+> ```bash
+> gemini-lens-login
+> ```  
+> *(or run `python -m gemini_lens_mcp.auth`). A Chrome window opens to sign into your Google account with your Google AI Pro subscription credits.*
 
 ### Option 1: Claude Desktop (Recommended)
 

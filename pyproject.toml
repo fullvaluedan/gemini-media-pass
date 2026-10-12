@@ -42,6 +42,7 @@ dependencies = [
 [project.scripts]
 gemini-lens = "gemini_lens_mcp.server:main"
 gemini-lens-mcp = "gemini_lens_mcp.server:main"
+gemini-lens-login = "gemini_lens_mcp.auth:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gemini_lens_mcp"]
