@@ -28,36 +28,31 @@ While Claude, Hermes, and Codex are elite reasoning and coding agents, they lack
 
 ---
 
-## 🔑 Authentication: How It Connects & Accesses Your Creations
+## 🛡️ Security & Authentication: Two Safe Ways to Connect
 
-### **Do I need to create a special Antigravity account?**
-**No!** There is no separate "Antigravity account." You simply sign in with your regular Google Account (`@gmail.com` or Google Workspace). 
+We built Gemini Media Pass with **security and privacy as first-class citizens**. You choose how you want to connect:
 
-### **Is a Free Account eligible?**
-**Yes, 100%!** Any standard free Google account is eligible out of the box with zero credit cards required.
+### 🔒 Option 1: Zero-Trust Official API Key (Recommended for Privacy-Conscious Developers)
+If you don't want to log in through a browser or connect your personal Google session, simply generate a free API key at [aistudio.google.com](https://aistudio.google.com) (no credit card needed).
+
+* **100% Sandboxed:** Scoped strictly to inference. Never touches your personal Gmail, Google Drive, or account tokens.
+* **Revocable in 1-Click:** Delete or cycle the key anytime in Google AI Studio.
+* **Setup:** Drop it in a `.env` file (`GEMINI_API_KEY=AIza...`) or pass it directly in your Claude Desktop / Cursor MCP config:
+  ```json
+  "env": {
+    "GEMINI_API_KEY": "AIzaSy..."
+  }
+  ```
+* **What it powers:** Video analysis, Vision, Audio critique, Gemini TTS, Imagen 3, 2M document context, and Pro/Flash reasoning.
 
 ---
 
-### Hybrid Dual-Mode Authentication
+### 🌐 Option 2: Consumer Google Account Session (`gemini-media-pass-login`)
+Only needed if you specifically want to drive **Google Flow (Veo 3.1 AI Video Generation)** using your personal consumer Google AI Pro subscription credits or browse your saved cloud projects:
 
-Gemini Media Pass gives you access to both your personal saved libraries and optional API keys:
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          GEMINI MEDIA PASS AUTH ENGINE                      │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│ 👤 Mode A: Personal Account Session  │ 🔑 Mode B: API Key / Headless Mode   │
-│    (Default & Recommended)           │    (Optional Developer Override)     │
-├──────────────────────────────────────┼──────────────────────────────────────┤
-│ • Auto-detected via Google login     │ • Set GEMINI_API_KEY / STITCH_KEY    │
-│ • Full access to saved projects,     │ • Works in headless Docker / CI      │
-│   past videos, and Stitch screens    │ • Pure model inference without       │
-│ • Reuses your $20/mo sub credits     │   needing interactive browser sign-in│
-└──────────────────────────────────────┴──────────────────────────────────────┘
-```
-
-* **Accessing Creations in Google Flow & Stitch:** Past creations, projects, and cloud assets are tied to your personal Google account. Logging in via `gemini-media-pass-login` allows tools like `flow_list_projects`, `flow_download_media`, and `stitch_list_projects` to retrieve your actual dashboard assets.
-* **API Key Override:** If running headless on a server, set `GEMINI_API_KEY` in your environment.
+* **How it works:** Run `gemini-media-pass-login`. An official Google Chrome window opens to sign into `flow.google.com`.
+* **Where tokens are stored:** Credentials are saved locally on your own machine in `~/.gflow` (never sent to third-party servers).
+* **What it unlocks:** Veo 3.1 video generation, clip extensions, Flow credit tracking, and downloading past cloud creations.
 
 ---
 

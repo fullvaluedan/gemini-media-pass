@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 import base64
@@ -87,28 +88,51 @@ async def execute_query(model: str, content: str) -> str:
         except Exception:
             pass
 
-    # Step 3: Optional GEMINI_API_KEY fallback
+    # Step 3: Optional GEMINI_API_KEY fallback (100% Zero-Trust Sandboxed Mode)
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key:
         try:
             # Map model names to standard Gemini API models
             api_model = "gemini-1.5-pro" if "pro" in model else "gemini-1.5-flash"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{api_model}:generateContent?key={api_key}"
+
+            # Check if content references a local file to attach as inlineData
+            parts = []
+            found_paths = re.findall(r'`([A-Za-z]:/[^`\r\n]+|/[^`\r\n]+)`', content)
+            for p in found_paths:
+                if os.path.isfile(p):
+                    ext = os.path.splitext(p)[1].lower()
+                    mime_map = {
+                        ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+                        ".mp3": "audio/mp3", ".wav": "audio/wav", ".m4a": "audio/m4a",
+                        ".pdf": "application/pdf", ".mp4": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm"
+                    }
+                    if ext in mime_map and os.path.getsize(p) < 20 * 1024 * 1024:
+                        with open(p, "rb") as f_in:
+                            b64_data = base64.b64encode(f_in.read()).decode("utf-8")
+                        parts.append({
+                            "inlineData": {
+                                "mimeType": mime_map[ext],
+                                "data": b64_data
+                            }
+                        })
+
+            parts.append({"text": content})
             req_data = {
-                "contents": [{"parts": [{"text": content}]}]
+                "contents": [{"parts": parts}]
             }
             req = urllib.request.Request(
                 url,
                 data=json.dumps(req_data).encode("utf-8"),
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=90) as resp:
                 res_data = json.loads(resp.read().decode("utf-8"))
                 candidates = res_data.get("candidates", [])
                 if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
+                    parts_out = candidates[0].get("content", {}).get("parts", [])
+                    if parts_out:
+                        return parts_out[0].get("text", "").strip()
         except Exception as err:
             return f"Error connecting to Gemini API: {str(err)}"
 

@@ -3,6 +3,29 @@ import shutil
 import platform
 from typing import Optional
 
+def load_dotenv():
+    """Lightweight zero-dependency .env file loader."""
+    candidates = [
+        ".env",
+        os.path.join(os.getcwd(), ".env"),
+        os.path.expanduser("~/.gemini_media_pass.env")
+    ]
+    for env_path in candidates:
+        if os.path.isfile(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            k, v = k.strip(), v.strip().strip('"').strip("'")
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+            except Exception:
+                pass
+
+load_dotenv()
+
 DEFAULT_BRIDGE_URL = "http://127.0.0.1:8000/v1/chat/completions"
 
 def get_bridge_url() -> str:
