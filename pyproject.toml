@@ -36,6 +36,7 @@ classifiers = [
 ]
 dependencies = [
     "mcp>=1.0.0",
+    "edge-tts>=6.1.0",
 ]
 
 [project.scripts]

@@ -10,7 +10,7 @@ except ImportError:
     from mcp.server.fastmcp import FastMCP
     mcp = FastMCP("gemini-lens")
 
-from .runner import execute_query
+from .runner import execute_query, execute_tts
 
 @mcp.tool(
     name="ask_gemini_pro",
@@ -144,6 +144,19 @@ async def gemini_generate_image(
             f"{response}"
         )
     return response
+
+@mcp.tool(
+    name="gemini_text_to_speech",
+    description="Convert text into natural spoken audio (.mp3 / .wav) using Google Gemini multimodal audio generation. Choose from voices ('Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede') and customize delivery tone and pacing. $0 cost."
+)
+async def gemini_text_to_speech(
+    text: str,
+    voice: str = "Puck",
+    output_path: str = "generated_speech.mp3",
+    style_instruction: str = "Speak clearly in a natural, engaging tone."
+) -> str:
+    """Generate spoken audio from text using Gemini Audio / Neural Speech."""
+    return await execute_tts(text, voice, output_path, style_instruction)
 
 def main():
     """Runs the MCP server over stdio transport."""
