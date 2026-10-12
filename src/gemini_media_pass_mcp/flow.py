@@ -165,9 +165,9 @@ def _format_not_authenticated_msg() -> str:
         "1. Open a terminal (PowerShell, Command Prompt, or Bash).\n"
         "2. Run the interactive sign-in command:\n"
         "   ```bash\n"
-        "   gemini-lens-login\n"
+        "   gemini-media-pass-login\n"
         "   ```\n"
-        "   *(or run: `python -m gemini_lens_mcp.auth`)*\n"
+        "   *(or run: `python -m gemini_media_pass_mcp.auth`)*\n"
         "3. A Chrome window will open. Complete sign-in into your Google account.\n"
         "4. Your Google Flow (Veo 3.1) credits and session will be immediately live in Claude!\n"
     )
@@ -618,5 +618,5 @@ def register_flow_tools(mcp):
             f"- **Prompt:** \"{prompt}\"\n"
             f"- **Target Duration:** {duration}s\n"
             f"- **Destination:** `{clean_path}`\n\n"
-            f"*(Connect your Flow session with `gemini-lens-login` to sync remote audio renders.)*"
+            f"*(Connect your Flow session with `gemini-media-pass-login` to sync remote audio renders.)*"
         )

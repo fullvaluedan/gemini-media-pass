@@ -1,5 +1,5 @@
 """
-Interactive Google Flow Authentication Helper for Gemini Lens MCP.
+Interactive Google Flow Authentication Helper for Gemini Media Pass MCP.
 Launches browser sign-in to capture the session for your Google AI Pro/Ultra subscription.
 """
 
@@ -27,7 +27,7 @@ def find_gflow() -> str:
 
 def main():
     print("=" * 68)
-    print(" 🎬 Gemini Lens MCP: Google Flow (Veo 3.1) Authentication Helper")
+    print(" 🎬 Gemini Media Pass MCP: Google Flow (Veo 3.1) Authentication Helper")
     print("=" * 68)
     print("\nThis will open Google Chrome to sign into your Google account")
     print("at flow.google.com using your Google AI Pro / Ultra subscription.\n")

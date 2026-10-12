@@ -1,6 +1,6 @@
-# 🔍 Gemini Lens MCP
+# 🎟️ Gemini Media Pass MCP
 
-> **The Ultimate All-In-One Google Multimodal Super-Server for Claude, Hermes, Codex, and Cursor.**  
+> **The All-Access Google Media & Multimodal MCP Super-Server for Claude, Hermes, Codex, and Cursor.**  
 > Native Video Analysis, Google Flow (Veo 3.1) Video Studio, Google Stitch UI Engine, Flow Music, Imagen 3, Gemini TTS, 2M Document Context, and Gemini Pro Reasoning.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,11 +10,11 @@
 
 ---
 
-## 💡 What is Gemini Lens?
+## 💡 What is Gemini Media Pass?
 
-While Claude, Hermes, and Codex are industry-leading reasoning and coding agents, they lack native video comprehension, AI video rendering, UI canvas design, and direct audio synthesis.
+While Claude, Hermes, and Codex are elite reasoning and coding agents, they lack native video comprehension, AI video rendering, UI canvas design, and direct audio synthesis.
 
-**Gemini Lens is an all-in-one Google Multimodal Coprocessor that unifies Google's entire creative and intelligence stack into a single MCP server**:
+**Gemini Media Pass gives your agents an all-access pass to Google's creative and multimodal intelligence stack through a single MCP server**:
 
 - 🎬 **Video Understanding & Flow Analysis** — Ingest raw `.mp4`, `.mov`, `.webm` files. Reviews camera transitions, cut pacing, B-roll timing, and subtitle flow without blowing up context windows.
 - 🎥 **Google Flow: Veo 3.1 AI Video Generation** — Render cinematic AI videos (`9:16` vertical or `16:9` widescreen, 4s/6s/8s/10s, Text-to-Video & Image-to-Video) using your Google AI subscription credits.
@@ -30,11 +30,21 @@ While Claude, Hermes, and Codex are industry-leading reasoning and coding agents
 
 ## 🔑 Authentication: How It Connects & Accesses Your Creations
 
-Gemini Lens features **Hybrid Dual-Mode Authentication**, giving you access to both your personal saved libraries and optional API keys:
+### **Do I need to create a special Antigravity account?**
+**No!** There is no separate "Antigravity account." You simply sign in with your regular Google Account (`@gmail.com` or Google Workspace). 
+
+### **Is a Free Account eligible?**
+**Yes, 100%!** Any standard free Google account is eligible out of the box with zero credit cards required.
+
+---
+
+### Hybrid Dual-Mode Authentication
+
+Gemini Media Pass gives you access to both your personal saved libraries and optional API keys:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            GEMINI LENS AUTH ENGINE                          │
+│                          GEMINI MEDIA PASS AUTH ENGINE                      │
 ├──────────────────────────────────────┬──────────────────────────────────────┤
 │ 👤 Mode A: Personal Account Session  │ 🔑 Mode B: API Key / Headless Mode   │
 │    (Default & Recommended)           │    (Optional Developer Override)     │
@@ -46,7 +56,7 @@ Gemini Lens features **Hybrid Dual-Mode Authentication**, giving you access to b
 └──────────────────────────────────────┴──────────────────────────────────────┘
 ```
 
-* **Accessing Creations in Google Flow & Stitch:** Past creations, projects, and cloud assets are tied to your personal Google account. Logging in via `gemini-lens-login` allows tools like `flow_list_projects`, `flow_download_media`, and `stitch_list_projects` to retrieve your actual dashboard assets.
+* **Accessing Creations in Google Flow & Stitch:** Past creations, projects, and cloud assets are tied to your personal Google account. Logging in via `gemini-media-pass-login` allows tools like `flow_list_projects`, `flow_download_media`, and `stitch_list_projects` to retrieve your actual dashboard assets.
 * **API Key Override:** If running headless on a server, set `GEMINI_API_KEY` in your environment.
 
 ---
@@ -55,7 +65,7 @@ Gemini Lens features **Hybrid Dual-Mode Authentication**, giving you access to b
 
 ### **You can use the Free Plan! No paid subscription is required.**
 
-Gemini Lens supports all three Google ecosystem tiers, allowing users to start for $0 and scale up as their workload grows:
+Gemini Media Pass supports all three Google ecosystem tiers, allowing users to start for $0 and scale up as their workload grows:
 
 | Resource / Feature | 🆓 Free Plan | ⚡ Google AI Plus (~$5/mo) | 💎 Google AI Pro ($20/mo) |
 |---|---|---|---|
@@ -72,7 +82,7 @@ Gemini Lens supports all three Google ecosystem tiers, allowing users to start f
 | **Document Reading** | **~500-page PDFs / 35k lines code** | **~500-page PDFs** (higher concurrency) | **1,000+ page docs / 70k lines code** |
 | **Gemini 3.8 Flash** | **1,500 calls / day** (fast) | **3,000+ calls / day** (faster) | 🚀 **Top priority queue** |
 | **Gemini 3.1 Pro** | **~50 reasoning queries / day** | **~200–300 queries / day** | 🧠 **Uncapped deep reasoning** |
-| **Authentication** | `agy login` (Free) OR `GEMINI_API_KEY` | `agy login` OR Cloud Pay-As-You-Go | `agy login` with subscribed account |
+| **Authentication** | Google login (Free) OR `GEMINI_API_KEY` | Google login OR Cloud Pay-As-You-Go | `gemini-media-pass-login` with subscribed account |
 
 ---
 
@@ -101,11 +111,11 @@ Gemini Lens supports all three Google ecosystem tiers, allowing users to start f
 
 ---
 
-## 📊 Token Savings: Claude vs. Gemini Lens
+## 📊 Token Savings: Claude vs. Gemini Media Pass
 
 Claude cannot read video files natively. In order for Claude to "see" a video, frames must be extracted as static images:
 
-| Video Length | Claude Frame Extraction (1 fps) | Gemini Lens External Processing | Claude Tokens Saved | Cost / Context Impact |
+| Video Length | Claude Frame Extraction (1 fps) | Gemini Media Pass External Processing | Claude Tokens Saved | Cost / Context Impact |
 |---|---|---|---|---|
 | **30 Seconds** | 30 images = **48,000 tokens** | **~500 tokens** (markdown report) | **~47,500 tokens** | Saves ~$0.15 |
 | **2 Minutes** | 120 images = **192,000 tokens** *(Near 200k limit!)* | **~750 tokens** (markdown report) | **~191,250 tokens** | Saves Claude context crash (~$0.58) |
@@ -167,15 +177,15 @@ Claude cannot read video files natively. In order for Claude to "see" a video, f
 ### 1. Interactive One-Time Google Login (For Flow & Stitch)
 
 ```bash
-gemini-lens-login
+gemini-media-pass-login
 ```
-*(Or run `python -m gemini_lens_mcp.auth`). A Chrome window opens to sign into your Google account, linking your Google Flow credits and personal asset libraries.*
+*(Or run `python -m gemini_media_pass_mcp.auth`). A Chrome window opens to sign into your Google account, linking your Google Flow credits and personal asset libraries.*
 
 ---
 
 ### 2. Configure Claude Desktop
 
-Add Gemini Lens to your `claude_desktop_config.json`:
+Add Gemini Media Pass to your `claude_desktop_config.json`:
 
 * **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 * **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -183,10 +193,10 @@ Add Gemini Lens to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "gemini-lens": {
+    "gemini-media-pass": {
       "command": "uvx",
       "args": [
-        "git+https://github.com/<your-username>/gemini-lens-mcp"
+        "git+https://github.com/<your-username>/gemini-media-pass"
       ]
     }
   }
@@ -198,7 +208,7 @@ Add Gemini Lens to your `claude_desktop_config.json`:
 ### 3. Configure Claude Code (CLI)
 
 ```bash
-claude mcp add gemini-lens -- uvx git+https://github.com/<your-username>/gemini-lens-mcp
+claude mcp add gemini-media-pass -- uvx git+https://github.com/<your-username>/gemini-media-pass
 ```
 
 ---
@@ -206,9 +216,9 @@ claude mcp add gemini-lens -- uvx git+https://github.com/<your-username>/gemini-
 ### 4. Configure Codex / Cursor / Windsurf
 
 In your IDE's **Settings** -> **Features** -> **MCP Servers** -> **Add New MCP Server**:
-- **Name:** `gemini-lens`
+- **Name:** `gemini-media-pass`
 - **Type:** `command`
-- **Command:** `uvx git+https://github.com/<your-username>/gemini-lens-mcp`
+- **Command:** `uvx git+https://github.com/<your-username>/gemini-media-pass`
 
 ---
 
@@ -217,10 +227,10 @@ In your IDE's **Settings** -> **Features** -> **MCP Servers** -> **Add New MCP S
 Add to your Hermes `config.yaml` or MCP section:
 ```yaml
 mcp_servers:
-  gemini_lens:
+  gemini_media_pass:
     command: uvx
     args:
-      - "git+https://github.com/<your-username>/gemini-lens-mcp"
+      - "git+https://github.com/<your-username>/gemini-media-pass"
 ```
 
 ---
@@ -228,14 +238,14 @@ mcp_servers:
 ## 📦 Local Development
 
 ```bash
-git clone https://github.com/<your-username>/gemini-lens-mcp.git
-cd gemini-lens-mcp
+git clone https://github.com/<your-username>/gemini-media-pass.git
+cd gemini-media-pass
 pip install -e .
 ```
 
 Verify all 24 tools:
 ```bash
-python -c "from gemini_lens_mcp.server import mcp; print(len(mcp._tool_manager._tools), 'tools active')"
+python -c "from gemini_media_pass_mcp.server import mcp; print(len(mcp._tool_manager._tools), 'tools active')"
 ```
 
 ---

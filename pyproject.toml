@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gemini-lens-mcp"
+name = "gemini-media-pass"
 version = "0.1.0"
-description = "Multimodal Video/Audio Analysis, Imagen Image Generation, 2M Doc Reading, and Gemini Pro/Flash MCP Server for Claude, Hermes, and Cursor."
+description = "The All-Access Google Media & Multimodal MCP Server: Video Analysis, Veo 3.1 AI Video Generation, Stitch UI Studio, Flow Music, Imagen 3, Gemini TTS, and 2M Docs for Claude, Hermes, and Cursor."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -18,7 +18,11 @@ keywords = [
     "gemini",
     "claude",
     "hermes",
-    "gemini-lens",
+    "gemini-media-pass",
+    "veo",
+    "google-flow",
+    "stitch",
+    "flow-music",
     "video-analysis",
     "image-generation",
     "imagen",
@@ -40,9 +44,9 @@ dependencies = [
 ]
 
 [project.scripts]
-gemini-lens = "gemini_lens_mcp.server:main"
-gemini-lens-mcp = "gemini_lens_mcp.server:main"
-gemini-lens-login = "gemini_lens_mcp.auth:main"
+gemini-media-pass = "gemini_media_pass_mcp.server:main"
+gemini-media-pass-mcp = "gemini_media_pass_mcp.server:main"
+gemini-media-pass-login = "gemini_media_pass_mcp.auth:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/gemini_lens_mcp"]
+packages = ["src/gemini_media_pass_mcp"]

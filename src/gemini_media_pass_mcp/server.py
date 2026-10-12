@@ -5,10 +5,10 @@ from typing import Optional
 
 try:
     from mcp.server.mcpserver import MCPServer
-    mcp = MCPServer("gemini-lens")
+    mcp = MCPServer("gemini-media-pass")
 except ImportError:
     from mcp.server.fastmcp import FastMCP
-    mcp = FastMCP("gemini-lens")
+    mcp = FastMCP("gemini-media-pass")
 
 from .runner import execute_query, execute_tts
 
