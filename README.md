@@ -64,20 +64,18 @@ Gemini Media Pass supports all three Google ecosystem tiers, allowing users to s
 
 | Resource / Feature | 🆓 Free Plan | ⚡ Google AI Plus (~$5/mo) | 💎 Google AI Pro ($20/mo) |
 |---|---|---|---|
-| **Monthly Cost** | **$0 / Free** (No credit card) | **~$5 / month** (Starter AI Tier) | **$20 / month** (Google One AI Premium) |
-| **Daily Request Limit** | **Up to 1,500 queries / day** (15 req/min) | **3,000+ queries / day** (30 req/min) | 🚀 **High-throughput enterprise priority** |
-| **Max Context Window** | **1,000,000 tokens** per query | **1,000,000 tokens** per query | **2,000,000 tokens** per query |
-| **Video Understanding** | **Up to ~1 hr video / query** (~900k tokens) | **Up to ~1 hr video / query** (faster queue) | **Up to ~2 hrs video in a single query** |
-| **Daily Video Capacity** | **~3–5 hours total video / day** | **~10–15 hours total video / day** | **Continuous automated batch video** |
-| **Veo 3.1 AI Video Gen** | Standard draft limits | Priority render queue | **Included monthly Veo credit pool** |
-| **Text-to-Speech (TTS)** | **~20–40 mins audio / day** + Neural | **~2–3 hours finished audio / day** | **Unlimited voiceovers & audiobooks** |
-| **Flow Music Gen** | Background loops & beats | Faster generation queue | High-throughput soundtrack scoring |
-| **Imagen 3 Image Gen** | **~30–50 images / day** (standard caps) | **~150–200 images / day** | **500+ images / day** (high-volume) |
-| **Google Stitch UI Studio** | Component scaffolding & layouts | Multi-screen parallel projects | Unlimited design systems & tokens |
-| **Document Reading** | **~500-page PDFs / 35k lines code** | **~500-page PDFs** (higher concurrency) | **1,000+ page docs / 70k lines code** |
-| **Gemini 3.8 Flash** | **1,500 calls / day** (fast) | **3,000+ calls / day** (faster) | 🚀 **Top priority queue** |
-| **Gemini 3.1 Pro** | **~50 reasoning queries / day** | **~200–300 queries / day** | 🧠 **Uncapped deep reasoning** |
-| **Authentication** | Google login (Free) OR `GEMINI_API_KEY` | Google login OR Cloud Pay-As-You-Go | `gemini-media-pass-login` with subscribed account |
+| **Monthly Cost** | **$0 / Free** (No credit card needed) | **~$5 / month** (Starter AI Tier) | **$20 / month** (Google One AI Premium) |
+| **Daily Questions & Tasks** | **1,500 questions / day** (~1 every 4 sec) | **3,000+ questions / day** (~2 req/sec) | 🚀 **Unlimited / Instant priority queue** |
+| **Memory per Prompt (Context)** | **750,000 words** (~1,500 book pages) | **750,000 words** (~1,500 book pages) | **1,500,000 words** (~3,000 book pages) |
+| **Claude Token Saver** | **Reads 500-page PDFs / 35k lines code** (Saves 100% of Claude tokens) | **Reads 500-page PDFs** (Fast parallel processing) | **Reads 1,000+ pages / 70k lines** in a single pass |
+| **Video Understanding** | **1-hour video clip / prompt** (~3–5 hrs analyzed/day) | **1-hour video clip / prompt** (~10–15 hrs analyzed/day) | **Up to 2-hour video clip** (~30+ hrs analyzed/day) |
+| **Veo 3.1 AI Video Generation** | **10–20 credits** (~1–2 preview clips) | **~100 credits / month** (~10 full videos or 20 extensions) | **~1,000 credits / month** (~100 videos or 200 extensions) |
+| **Text-to-Speech (Voice)** | **20–40 mins audio / day** (5 natural voices + Neural) | **2–3 hours audio / day** (Commercial voiceovers) | **Unlimited voice generation** (Audiobooks & podcasts) |
+| **Flow Music (MusicFX)** | **30-second loops & beats** (Background, game loops) | **1–2 minute compositions** (Arranged tracks) | **Full tracks & studio stem export** (Uncapped scoring) |
+| **Google Stitch UI Studio** | **5 screen designs / day** (Responsive + Tailwind) | **25 screen designs / day** (Multi-screen flows) | **Unlimited screens & design systems** (Complete apps) |
+| **Imagen 3 Image Gen** | **30–50 images / day** (7 aspect ratios, photoreal) | **150–200 images / day** (Faster rendering) | **500+ images / day** (High-throughput marketing) |
+| **Gemini 3.1 Pro Reasoning** | **~50 complex queries / day** | **200–300 queries / day** | 🧠 **Uncapped deep reasoning** |
+| **Setup & Security** | **Zero-Trust API Key OR Google Login** | **API Key OR Browser session** | `gemini-media-pass-login` (Unlocks Veo credits) |
 
 <p align="center">
   <img src="assets/comparison_chart.png" alt="Gemini Media Pass Comparison Chart" width="100%">
@@ -85,28 +83,48 @@ Gemini Media Pass supports all three Google ecosystem tiers, allowing users to s
 
 ---
 
-## 🎯 Real-World Production Limits: What Can You Actually Build?
+## 🎯 Plain-English Explainer: What Do These Numbers Actually Mean?
 
-### 1. 🎬 Video Understanding (`gemini_video`)
-* **On Free ($0):** Review **20–30 short-form clips** (TikToks, Reels, Shorts) or **3–5 full 20-minute YouTube tutorials** daily. Single videos can be up to 45–60 minutes long.
-* **On AI Plus (~$5/mo):** Review **50+ short-form clips** or **10–15 full YouTube videos** daily with halved queue latency.
-* **On AI Pro ($20/mo):** Continuous automated QA pipelines. Ingest an entire **2-hour raw podcast recording, conference lecture, or gameplay stream in a single prompt** (using the full 2M token window).
+If you're not an AI researcher, terms like "1,500 queries", "2 million tokens", or "draft limits" sound like gibberish. Here is what every feature and limit actually gives you in plain English:
 
-### 2. 🎥 Google Flow: Veo 3.1 Video Studio (`flow_generate_video`, `flow_extend_video`)
-* **Veo Fast (20 credits):** Render 4s/6s/8s clips in `9:16` or `16:9`.
-* **Veo Quality (40 credits):** Maximum visual fidelity, complex cinematic camera motion, realistic lighting.
-* **Omni Flash (20 credits):** Generates AI video with synchronized **native audio** (speech, sound effects, ambient noise).
-* **Video Extension (+8s, 20 credits):** Extend clips seamlessly while preserving characters, style, and motion continuity.
+### 1. 💬 Daily Questions & Prompts ("1,500 Queries")
+* **What it means:** A "query" is each time Claude or you ask Gemini a question, inspect an image, run a code audit, or generate speech.
+* **Real-world capacity:** **1,500 queries every single day** means you can ask roughly 1 question every 4 seconds continuously, or over 60 tasks an hour around the clock. For standard daily development and creative work, it is virtually impossible for a regular person to exhaust this on the free tier.
 
-### 3. 🗣️ Text-to-Speech Generation (`gemini_text_to_speech`)
-* **On Free ($0):** Generate **15,000–30,000 spoken words per day** (about 20–40 minutes of finished narration) via Gemini Audio, plus unlimited keyless voice synthesis via the built-in Neural Fallback engine.
-* **On AI Plus (~$5/mo):** Generate **100,000+ spoken words per day** (roughly 2–3 hours of finished audio daily) for multi-chapter video essays and courses.
-* **On AI Pro ($20/mo):** Uncapped generation for **full audiobook publishing**, interactive voice agents, and in-game NPC dialogue.
+### 2. 🧠 Memory per Prompt (Tokens & Context Window)
+* **What it means:** AI models measure reading memory in "tokens" (roughly 750 words per 1,000 tokens).
+* **1 Million tokens:** Equal to **750,000 words** — that is longer than the entire *Lord of the Rings* trilogy + *The Hobbit* combined, or **~1,500 printed book pages**, or **~35,000 lines of code** in a single prompt.
+* **2 Million tokens:** Equal to **1,500,000 words** — ~3,000 book pages, 70,000+ lines of code, or 2 full hours of raw video in a single prompt.
 
-### 4. 🎨 Imagen 3 Image Generation (`gemini_generate_image`)
-* **On Free ($0):** Generate **~30–50 high-resolution images daily** across all 7 aspect ratios.
-* **On AI Plus (~$5/mo):** Generate **~150–200 images daily** with priority queue speed.
-* **On AI Pro ($20/mo):** Generate **500+ images daily**. Perfect for game texture libraries, multivariate ad creatives, and rapid design sprints.
+### 3. 💸 Claude Token Saver (Document & Code Reading)
+* **Why this is massive:** Claude has strict context windows and expensive token fees. If you paste a 300-page PDF or 30,000 lines of code into Claude, you blow your Claude limits, risk context crashes, and burn your subscription.
+* **How Gemini Media Pass fixes this:** Claude tells Gemini: *"Read this 500-page document and extract the 3 critical security vulnerabilities."* Gemini digests the entire file inside its massive 1M–2M window for **$0**, and sends back a clean 200-word answer to Claude. You burn almost **zero Claude tokens** and get instant answers for free.
+
+### 4. 👁️ Video Understanding (Scene & Audio Inspection)
+* **Per prompt limit:** You can attach a **single raw video up to 1 hour long** directly to a prompt. Gemini watches every frame, reviews camera motion, listens to spoken dialogue, checks pacing, and timestamps events.
+* **Daily limit:** Free accounts have a daily token allowance that comfortably supports **3 to 5 full one-hour video reviews every day**. On Plus/Pro, you can analyze 10 to 30+ hours of video daily.
+
+### 5. 🎬 Veo 3.1 AI Video Generation & Credit Math
+* **How credits work:**
+  * Generating 1 new cinematic video (5s–8s clip) costs **10 credits**.
+  * Extending an existing video (+8 seconds) costs **5 to 10 credits**.
+* **Free Tier:** Includes a **Starter Trial of 10–20 credits** (~1 to 2 draft test videos).
+* **Google AI Plus (~$5/mo):** Gives **~100 credits / month** (~10 full videos or 20 clip extensions).
+* **Google AI Pro ($20/mo):** Gives **~1,000 credits / month** (~100 full videos or 200 extensions) with priority high-speed render queues.
+
+### 6. 🗣️ Text-to-Speech (Voice Generation)
+* **Free Tier:** Produces **20–40 minutes of natural human speech daily** using 5 Gemini expressive voice personas (`Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`), plus unlimited neural voice synthesis through the built-in fallback engine.
+* **AI Plus / Pro:** Generates 2–3 hours to unlimited narration per day for full audiobooks, YouTube voiceovers, and podcasts.
+
+### 7. 🎵 Flow Music (MusicFX)
+* **Free Tier:** Generates **30-second seamless music loops & ambient beats** — ideal for YouTube video background music, game sound loops, and podcast intro stingers.
+* **AI Plus / Pro:** Generates **1–2 minute full track compositions**, multi-layer arrangements, and studio stem exports with high-speed rendering.
+
+### 8. 📱 Google Stitch UI Studio
+* **What it does:** Converts natural language prompts into responsive mobile and desktop screen mockups and outputs clean Tailwind CSS, React, and HTML code.
+* **Free Tier:** **5 screen designs / day** with full code export.
+* **AI Plus (~$5/mo):** **25 screen designs / day** with multi-screen connected user flows.
+* **AI Pro ($20/mo):** **Unlimited screen designs**, custom design systems, and reusable token themes.
 
 ---
 
