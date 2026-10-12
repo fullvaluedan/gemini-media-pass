@@ -1,24 +1,53 @@
 # 🔍 Gemini Lens MCP
 
-> **Give Claude, Hermes, and Cursor native eyes, ears, voice, video understanding, and Imagen creative generation — powered by Google Gemini.**  
-> Supports both **100% Free Google Accounts** and **Google AI Pro Subscriptions ($20/mo)**.
+> **The Ultimate All-In-One Google Multimodal Super-Server for Claude, Hermes, Codex, and Cursor.**  
+> Native Video Analysis, Google Flow (Veo 3.1) Video Studio, Google Stitch UI Engine, Flow Music, Imagen 3, Gemini TTS, 2M Document Context, and Gemini Pro Reasoning.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Standard](https://img.shields.io/badge/MCP-Protocol-purple.svg)](https://modelcontextprotocol.io/)
+[![Google Veo 3.1](https://img.shields.io/badge/Video-Google%20Veo%203.1-blue.svg)](https://deepmind.google/technologies/veo/)
 
 ---
 
 ## 💡 What is Gemini Lens?
 
-While Claude and Hermes are elite at coding and deep reasoning, they lack native video comprehension, audio processing, and direct creative generation. Gemini Lens acts as a high-powered multimodal coprocessor:
+While Claude, Hermes, and Codex are industry-leading reasoning and coding agents, they lack native video comprehension, AI video rendering, UI canvas design, and direct audio synthesis.
 
-- 🎬 **Video Flow & Narrative Analysis** — Inspect `.mp4`, `.mov`, `.webm`, `.mkv` files directly. Gemini reviews scene transitions, camera pacing, B-roll timing, and visual continuity without blowing up Claude's token window.
-- 🎨 **Imagen Image Generation** — Generate photorealistic assets, UI concepts, and marketing graphics in any aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`).
-- 🎙️ **Audio & Tone Understanding** — Listen to speech, podcasts, or sound effects (`.mp3`, `.wav`, `.m4a`) for transcription, vocal tone critique, and audio quality checks.
-- 🗣️ **Text-to-Speech (TTS) Generation** — Convert text and scripts into natural spoken audio (`.mp3` / `.wav`) using Gemini's native audio generation and neural voices (`Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`).
-- 📚 **2,000,000 Token Document Reading** — Offload massive PDFs, codebases, or dump logs into Gemini's 2M-token window.
-- 🧠 **Dual-Model Delegation** — Tap Gemini 3.1 Pro for deep second opinions or Gemini 3.8 Flash for ultra-fast batch processing.
+**Gemini Lens is an all-in-one Google Multimodal Coprocessor that unifies Google's entire creative and intelligence stack into a single MCP server**:
+
+- 🎬 **Video Understanding & Flow Analysis** — Ingest raw `.mp4`, `.mov`, `.webm` files. Reviews camera transitions, cut pacing, B-roll timing, and subtitle flow without blowing up context windows.
+- 🎥 **Google Flow: Veo 3.1 AI Video Generation** — Render cinematic AI videos (`9:16` vertical or `16:9` widescreen, 4s/6s/8s/10s, Text-to-Video & Image-to-Video) using your Google AI subscription credits.
+- 🔄 **Video Extension & Cloud Project Retrieval** — Extend clips by +8s, list your cloud projects on `flow.google.com`, and download past creations by media ID.
+- 📱 **Google Stitch: AI UI Design Studio** — Generate mobile/desktop app screens, extract Tailwind/HTML code, and enforce brand design systems directly from chat.
+- 🎵 **Flow Music & Soundtracks** — Compose backing tracks, instrumental beats, and ambient soundscapes via Google Flow Music / MusicFX.
+- 🗣️ **Gemini Text-to-Speech (TTS)** — Speak scripts aloud into `.mp3`/`.wav` using Gemini's native audio generation with 5 voice personas (`Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`) plus offline neural fallback.
+- 🎨 **Imagen 3 Image Generation** — Generate photorealistic graphics and marketing assets across 7 aspect ratios (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`).
+- 📚 **2,000,000 Token Document Reading** — Drop massive PDFs, enterprise logs, or 70,000-line codebases into Gemini's 2M-token window.
+- 🧠 **Dual-Model Delegation** — Offload deep algorithmic proofs to Gemini 3.1 Pro or batch tasks to Gemini 3.8 Flash.
+
+---
+
+## 🔑 Authentication: How It Connects & Accesses Your Creations
+
+Gemini Lens features **Hybrid Dual-Mode Authentication**, giving you access to both your personal saved libraries and optional API keys:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            GEMINI LENS AUTH ENGINE                          │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│ 👤 Mode A: Personal Account Session  │ 🔑 Mode B: API Key / Headless Mode   │
+│    (Default & Recommended)           │    (Optional Developer Override)     │
+├──────────────────────────────────────┼──────────────────────────────────────┤
+│ • Auto-detected via Google login     │ • Set GEMINI_API_KEY / STITCH_KEY    │
+│ • Full access to saved projects,     │ • Works in headless Docker / CI      │
+│   past videos, and Stitch screens    │ • Pure model inference without       │
+│ • Reuses your $20/mo sub credits     │   needing interactive browser sign-in│
+└──────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+* **Accessing Creations in Google Flow & Stitch:** Past creations, projects, and cloud assets are tied to your personal Google account. Logging in via `gemini-lens-login` allows tools like `flow_list_projects`, `flow_download_media`, and `stitch_list_projects` to retrieve your actual dashboard assets.
+* **API Key Override:** If running headless on a server, set `GEMINI_API_KEY` in your environment.
 
 ---
 
@@ -35,116 +64,116 @@ Gemini Lens supports all three Google ecosystem tiers, allowing users to start f
 | **Max Context Window** | **1,000,000 tokens** per query | **1,000,000 tokens** per query | **2,000,000 tokens** per query |
 | **Video Understanding** | **Up to ~1 hr video / query** (~900k tokens) | **Up to ~1 hr video / query** (faster queue) | **Up to ~2 hrs video in a single query** |
 | **Daily Video Capacity** | **~3–5 hours total video / day** | **~10–15 hours total video / day** | **Continuous automated batch video** |
+| **Veo 3.1 AI Video Gen** | Standard draft limits | Priority render queue | **Included monthly Veo credit pool** |
 | **Text-to-Speech (TTS)** | **~20–40 mins audio / day** + Neural | **~2–3 hours finished audio / day** | **Unlimited voiceovers & audiobooks** |
+| **Flow Music Gen** | Background loops & beats | Faster generation queue | High-throughput soundtrack scoring |
 | **Imagen 3 Image Gen** | **~30–50 images / day** (standard caps) | **~150–200 images / day** | **500+ images / day** (high-volume) |
+| **Google Stitch UI Studio** | Component scaffolding & layouts | Multi-screen parallel projects | Unlimited design systems & tokens |
 | **Document Reading** | **~500-page PDFs / 35k lines code** | **~500-page PDFs** (higher concurrency) | **1,000+ page docs / 70k lines code** |
 | **Gemini 3.8 Flash** | **1,500 calls / day** (fast) | **3,000+ calls / day** (faster) | 🚀 **Top priority queue** |
 | **Gemini 3.1 Pro** | **~50 reasoning queries / day** | **~200–300 queries / day** | 🧠 **Uncapped deep reasoning** |
-| **Authentication** | `agy login` (Free) OR `GEMINI_API_KEY` | `agy login` OR Google Cloud Pay-As-You-Go | `agy login` with subscribed account |
+| **Authentication** | `agy login` (Free) OR `GEMINI_API_KEY` | `agy login` OR Cloud Pay-As-You-Go | `agy login` with subscribed account |
 
 ---
 
 ## 🎯 Real-World Production Limits: What Can You Actually Build?
 
 ### 1. 🎬 Video Understanding (`gemini_video`)
-* **On Free ($0):** Analyze **20–30 short-form clips** (TikToks, Reels, YouTube Shorts) or **3–5 full 20-minute YouTube tutorials** per day. A single video can be up to 45–60 minutes long without clipping.
-* **On AI Plus (~$5/mo):** Analyze **50+ short-form clips** or **10–15 full YouTube videos** daily with halved processing wait times.
-* **On AI Pro ($20/mo):** Run continuous video QA pipelines. Ingest an entire **2-hour raw podcast recording or gameplay stream in a single prompt** (utilizing the full 2M token window).
+* **On Free ($0):** Review **20–30 short-form clips** (TikToks, Reels, Shorts) or **3–5 full 20-minute YouTube tutorials** daily. Single videos can be up to 45–60 minutes long.
+* **On AI Plus (~$5/mo):** Review **50+ short-form clips** or **10–15 full YouTube videos** daily with halved queue latency.
+* **On AI Pro ($20/mo):** Continuous automated QA pipelines. Ingest an entire **2-hour raw podcast recording, conference lecture, or gameplay stream in a single prompt** (using the full 2M token window).
 
-### 2. 🗣️ Text-to-Speech Generation (`gemini_text_to_speech`)
-* **On Free ($0):** Generate **15,000–30,000 spoken words per day** (about 20–40 minutes of finished narration) via Gemini Audio, plus unlimited keyless generation via the built-in Neural Fallback engine.
-* **On AI Plus (~$5/mo):** Generate **100,000+ spoken words per day** (roughly 2–3 hours of finished audio daily) for daily YouTube automation, course lectures, and multi-language narrations.
-* **On AI Pro ($20/mo):** Uncapped, high-concurrency generation for full audiobook publishing, interactive voice agents, and real-time gaming dialog.
+### 2. 🎥 Google Flow: Veo 3.1 Video Studio (`flow_generate_video`, `flow_extend_video`)
+* **Veo Fast (20 credits):** Render 4s/6s/8s clips in `9:16` or `16:9`.
+* **Veo Quality (40 credits):** Maximum visual fidelity, complex cinematic camera motion, realistic lighting.
+* **Omni Flash (20 credits):** Generates AI video with synchronized **native audio** (speech, sound effects, ambient noise).
+* **Video Extension (+8s, 20 credits):** Extend clips seamlessly while preserving characters, style, and motion continuity.
 
-### 3. 🎨 Imagen 3 Image Generation (`gemini_generate_image`)
-* **On Free ($0):** Generate **~30–50 high-resolution images daily** across all 7 aspect ratios. Perfect for blog post headers, app icons, and concept art iterations.
-* **On AI Plus (~$5/mo):** Generate **~150–200 images daily** with faster queue times. Ideal for social media content creation and website mockup variants.
-* **On AI Pro ($20/mo):** Generate **500+ images daily**. Perfect for game studios generating hundreds of sprite textures, marketing agencies running A/B ad creative batches, and rapid design sprints.
+### 3. 🗣️ Text-to-Speech Generation (`gemini_text_to_speech`)
+* **On Free ($0):** Generate **15,000–30,000 spoken words per day** (about 20–40 minutes of finished narration) via Gemini Audio, plus unlimited keyless voice synthesis via the built-in Neural Fallback engine.
+* **On AI Plus (~$5/mo):** Generate **100,000+ spoken words per day** (roughly 2–3 hours of finished audio daily) for multi-chapter video essays and courses.
+* **On AI Pro ($20/mo):** Uncapped generation for **full audiobook publishing**, interactive voice agents, and in-game NPC dialogue.
 
-### 4. 📚 Document & Codebase Digestion (`gemini_read_document`)
-* **On Free ($0):** Ingest up to **1,000,000 tokens** (~750,000 words) per query. That is an entire 500-page book, an entire company HR manual, or a 35,000-line code repository in a single shot.
-* **On AI Plus (~$5/mo):** Process multiple 1M-token documents in parallel without hitting concurrency blocks.
-* **On AI Pro ($20/mo):** Double the capacity to **2,000,000 tokens** (~1.5M words). Ingest massive multi-repo architectures, giant SQLite crash dumps, or 1,000+ page technical specifications.
-
-### 5. 🧠 Gemini 3.1 Pro Reasoning Delegation (`ask_gemini_pro`)
-* **On Free ($0):** ~50 deep-thinking architectural reviews per day. Ideal for getting a reliable second opinion when Claude or Hermes hits a complex logic bug.
-* **On AI Plus (~$5/mo):** ~200–300 deep reasoning queries per day with priority response.
-* **On AI Pro ($20/mo):** Uncapped deep reasoning for continuous architectural validation, formal proofs, and complex mathematical algorithms.
+### 4. 🎨 Imagen 3 Image Generation (`gemini_generate_image`)
+* **On Free ($0):** Generate **~30–50 high-resolution images daily** across all 7 aspect ratios.
+* **On AI Plus (~$5/mo):** Generate **~150–200 images daily** with priority queue speed.
+* **On AI Pro ($20/mo):** Generate **500+ images daily**. Perfect for game texture libraries, multivariate ad creatives, and rapid design sprints.
 
 ---
 
 ## 📊 Token Savings: Claude vs. Gemini Lens
 
-Claude cannot read video files natively. In order for Claude to "see" a video, frames must be extracted as images:
+Claude cannot read video files natively. In order for Claude to "see" a video, frames must be extracted as static images:
 
-| Video Length | Claude Frame Extraction (1 fps) | Gemini Lens External Processing | Claude Tokens Saved | Cost Saved (Claude Sonnet) |
+| Video Length | Claude Frame Extraction (1 fps) | Gemini Lens External Processing | Claude Tokens Saved | Cost / Context Impact |
 |---|---|---|---|---|
-| **30 Seconds** | 30 images = **48,000 tokens** | **~500 tokens** (markdown report) | **~47,500 tokens** | ~$0.15 |
-| **2 Minutes** | 120 images = **192,000 tokens** *(Near 200k limit!)* | **~750 tokens** (markdown report) | **~191,250 tokens** | ~$0.58 |
-| **5 Minutes** | 300 images = **480,000 tokens** *(CRASHES Claude)* | **~1,000 tokens** (markdown report) | **479,000 tokens** | Avoids context crash |
-| **15 Minutes** | 900 images = **1,440,000 tokens** *(Impossible)* | **~1,200 tokens** (markdown report) | **1,438,800 tokens** | Enables impossible workflows |
+| **30 Seconds** | 30 images = **48,000 tokens** | **~500 tokens** (markdown report) | **~47,500 tokens** | Saves ~$0.15 |
+| **2 Minutes** | 120 images = **192,000 tokens** *(Near 200k limit!)* | **~750 tokens** (markdown report) | **~191,250 tokens** | Saves Claude context crash (~$0.58) |
+| **5 Minutes** | 300 images = **480,000 tokens** *(CRASHES Claude)* | **~1,000 tokens** (markdown report) | **479,000 tokens** | Prevents context overflow |
+| **15 Minutes** | 900 images = **1,440,000 tokens** *(Impossible)* | **~1,200 tokens** (markdown report) | **1,438,800 tokens** | Unlocks impossible workflows |
 
 ---
 
-## 🛠️ Complete Tool Inventory (14 Tools)
+## 🛠️ Complete Tool Inventory (24 Tools)
 
-### 👁️ Multimodal Understanding & Reasoning (Gemini Pro / Flash)
-| Tool | Parameters | Description | Best For |
-|---|---|---|---|
-| `gemini_video` | `video_path`, `question` | Watch & analyze video files (`.mp4`, `.mov`, `.webm`, `.mkv`). Inspects temporal scene flow, cut pacing, B-roll timing, camera movement, and on-screen text. | Gameplay reviews, video edit critiques, bug screencasts, tutorial breakdowns. |
-| `gemini_vision` | `image_path`, `question` | Inspect UI screenshots, wireframes, architectural diagrams, and photos with high-precision multimodal vision. | Frontend bug hunting, diagram analysis, UI comparison against design specs. |
-| `gemini_audio` | `audio_path`, `question` | Listen to and analyze raw audio (`.mp3`, `.wav`, `.m4a`). Transcribes speech, critiques vocal delivery/pacing, identifies emotion/tone, and flags background sounds. | Podcast editing, vocal delivery coaching, sound effect inspection. |
-| `gemini_read_document` | `file_path`, `question` | Ingest massive documents, books, compliance manuals, and logs using Gemini's 2,000,000 token context window. | Giant log analysis, legal/tax document reviews, massive code repositories. |
-| `gemini_multimodal_inspect` | `file_path`, `question` | Universal router: automatically inspects any media file (video, audio, image, PDF, or code) and returns a detailed analysis. | Quick inspection when file type varies. |
-| `ask_gemini_pro` | `prompt` | Delegate complex tasks to Google Gemini 3.1 Pro. Deep multi-step reasoning, mathematical proofs, alternative architecture options, and second opinions. | Complex algorithm validation, refactoring architecture, code second opinions. |
-| `ask_gemini_flash` | `prompt` | High-speed task delegation to Google Gemini 3.8 Flash. Low latency, rapid extraction, and batch operations. | Fast JSON extraction, bulk text summarization, rapid classifications. |
+### 👁️ Multimodal Understanding & Analysis (Gemini Flash / Pro)
+| Tool | Parameters | Description |
+|---|---|---|
+| `gemini_video` | `video_path`, `question` | Watch & analyze video files (`.mp4`, `.mov`, `.webm`, `.mkv`). Inspects temporal scene flow, cut pacing, B-roll timing, camera movement, and on-screen text. |
+| `gemini_vision` | `image_path`, `question` | Inspect UI screenshots, wireframes, architectural diagrams, and photos with high-precision multimodal vision. |
+| `gemini_audio` | `audio_path`, `question` | Listen to and analyze raw audio (`.mp3`, `.wav`, `.m4a`). Transcribes speech, critiques vocal delivery/pacing, identifies emotion/tone, and flags background sounds. |
+| `gemini_read_document` | `file_path`, `question` | Ingest massive documents, books, compliance manuals, and logs using Gemini's 2,000,000 token context window. |
+| `gemini_multimodal_inspect` | `file_path`, `question` | Universal router: automatically inspects any media file (video, audio, image, PDF, or code) and returns a detailed analysis. |
+| `ask_gemini_pro` | `prompt` | Delegate complex tasks to Google Gemini 3.1 Pro. Deep multi-step reasoning, mathematical proofs, alternative architecture options, and second opinions. |
+| `ask_gemini_flash` | `prompt` | High-speed task delegation to Google Gemini 3.8 Flash. Low latency, rapid extraction, and batch operations. |
 
-### 🎙️ Voice & Creative Generation
-| Tool | Parameters | Description | Best For |
-|---|---|---|---|
-| `gemini_text_to_speech` | `text`, `voice`, `output_path`, `style_instruction` | Convert text and scripts into high-quality spoken audio (`.mp3` / `.wav`) using Gemini multimodal audio output or neural speech. Supports voices: `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`. | Voiceovers, tutorial narration, accessibility, automated podcast reads. |
-| `gemini_generate_image` | `prompt`, `aspect_ratio`, `image_name` | Generate photorealistic images and concept art via Google Imagen across 7 aspect ratios (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`). | UI mockups, game concept art, website banners, social thumbnails. |
+### 🎙️ Voice & Audio Generation
+| Tool | Parameters | Description |
+|---|---|---|
+| `gemini_text_to_speech` | `text`, `voice`, `output_path`, `style_instruction` | Convert text and scripts into high-quality spoken audio (`.mp3` / `.wav`) using Gemini multimodal audio output or neural speech. Supports voices: `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`. |
+| `flow_generate_music` | `prompt`, `duration`, `output_path` | Compose background music, instrumental beats, and ambient soundscapes via Google Flow Music / MusicFX. |
 
-### 🎬 Google Flow: Veo 3.1 AI Video Studio
-| Tool | Parameters | Description | Best For |
-|---|---|---|---|
-| `flow_generate_video` | `prompt`, `orientation`, `duration`, `model`, `mode`, `initial_frame`, `end_frame` | Generate cinematic AI videos using Google Flow (**Veo 3.1** & **Omni Flash** with native audio). Supports `9:16` vertical & `16:9` widescreen, 4s/6s/8s/10s, Text-to-Video and Image-to-Video. Feeds live credit balances. | Cinematic video clips, YouTube Shorts, TikToks, B-roll generation. |
-| `flow_extend_video` | `media_id`, `prompt`, `project_id`, `orientation` | Extends an existing Google Flow video by an extra +8 seconds with continuous motion and sound. | Long-form story scenes, continuous narrative clips. |
-| `flow_get_credits` | `force_refresh` | Check live Google Flow credit balance, monthly subscription pool, and daily burn rate with milestone alerts. | Real-time budget monitoring before launching batch renders. |
-| `flow_list_models` | None | Displays all available video models (`veo-fast`, `veo-quality`, `veo-lite`, `omni-flash`) and their credit costs. | Model capability discovery. |
-| `flow_auth_status` | None | Checks Google Flow session health and verifies the connected Google account. | Diagnostics and connection verification. |
+### 🎨 Visual & Creative Generation
+| Tool | Parameters | Description |
+|---|---|---|
+| `gemini_generate_image` | `prompt`, `aspect_ratio`, `image_name` | Generate photorealistic images and concept art via Google Imagen across 7 aspect ratios (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`). |
 
----
+### 🎬 Google Flow: Veo 3.1 Video Studio & Asset Retrieval
+| Tool | Parameters | Description |
+|---|---|---|
+| `flow_generate_video` | `prompt`, `orientation`, `duration`, `model`, `mode`, `initial_frame`, `end_frame` | Generate cinematic AI videos using Google Flow (**Veo 3.1** & **Omni Flash** with native audio). Supports `9:16` vertical & `16:9` widescreen, 4s/6s/8s/10s, Text-to-Video and Image-to-Video. Feeds live credit balances. |
+| `flow_extend_video` | `media_id`, `prompt`, `project_id`, `orientation` | Extends an existing Google Flow video by an extra +8 seconds with continuous motion and sound. |
+| `flow_list_projects` | `limit` | List your existing Google Flow projects and folders created on `flow.google.com` or via CLI. |
+| `flow_download_media` | `media_id`, `output_path` | Fetch an already-generated video or audio asset from Google Flow by its media ID directly into your local workspace. |
+| `flow_sync_catalog` | None | Reconcile and sync your local media catalog with your remote Google Flow project history. |
+| `flow_get_credits` | `force_refresh` | Check live Google Flow credit balance, monthly subscription pool, and daily burn rate with milestone alerts. |
+| `flow_list_models` | None | Displays all available video models (`veo-fast`, `veo-quality`, `veo-lite`, `omni-flash`) and their credit costs. |
+| `flow_auth_status` | None | Checks Google Flow session health and verifies the connected Google account. |
 
-## 🗣️ Text-to-Speech (TTS): How It Works for Free vs. Paid
-
-Gemini Lens uses a dual-engine approach to ensure 100% reliable audio generation:
-
-1. **Native Gemini Audio Generation (Gemini 2.0 / 3.8 Flash):**
-   - Available via `GEMINI_API_KEY`.
-   - **Free Users:** Google AI Studio includes multimodal audio generation in its free tier (up to 1,500 daily requests for $0).
-   - **Paid Users:** Google Cloud / AI Studio paid accounts unlock higher rate limits and billing credits.
-   - **Voice Characters Available:**
-     - `Puck` — Upbeat, energetic, playful.
-     - `Charon` — Deep, authoritative, calm, serious.
-     - `Kore` — Soothing, warm, natural, gentle.
-     - `Fenrir` — Resonant, confident, dynamic.
-     - `Aoede` — Expressive, melodious, engaging storyteller.
-2. **Neural Offline Fallback (`edge-tts`):**
-   - Built into package dependencies.
-   - If no API key is configured or rate limits are reached, Gemini Lens automatically falls back to neural voice synthesis with **zero API key and zero cost required**.
+### 📱 Google Stitch: AI UI Design Studio
+| Tool | Parameters | Description |
+|---|---|---|
+| `stitch_generate_screen` | `project_id`, `prompt`, `device_type`, `design_system_id` | Generate a new mobile or desktop UI screen and frontend code in a Google Stitch project from a text prompt. |
+| `stitch_list_projects` | `filter` | Lists all Google Stitch UI design projects owned by or shared with your Google account. |
+| `stitch_create_project` | `title` | Creates a new Google Stitch project container for app screens, design systems, and frontend code. |
+| `stitch_list_screens` | `project_id` | List all screens, UI mockups, and components inside a specific Google Stitch project. |
+| `stitch_get_screen` | `project_id`, `screen_id` | Retrieve the full UI layout, components, and code for an existing screen inside a Google Stitch project. |
+| `stitch_apply_design_system` | `project_id`, `design_system_id` | Apply an existing design system (color tokens, typography, layout specs) to a Google Stitch project. |
 
 ---
 
 ## 🚀 Quickstart & Setup
 
-> **Note on Google Flow (Veo 3.1):** The Gemini multimodal tools (video reading, vision, audio, TTS, 2M docs) work automatically out of the box. If you also want to generate AI videos via Google Flow, simply run the one-time interactive login:  
-> ```bash
-> gemini-lens-login
-> ```  
-> *(or run `python -m gemini_lens_mcp.auth`). A Chrome window opens to sign into your Google account with your Google AI Pro subscription credits.*
+### 1. Interactive One-Time Google Login (For Flow & Stitch)
 
-### Option 1: Claude Desktop (Recommended)
+```bash
+gemini-lens-login
+```
+*(Or run `python -m gemini_lens_mcp.auth`). A Chrome window opens to sign into your Google account, linking your Google Flow credits and personal asset libraries.*
+
+---
+
+### 2. Configure Claude Desktop
 
 Add Gemini Lens to your `claude_desktop_config.json`:
 
@@ -166,9 +195,7 @@ Add Gemini Lens to your `claude_desktop_config.json`:
 
 ---
 
-### Option 2: Claude Code CLI
-
-Add the server in a single terminal command:
+### 3. Configure Claude Code (CLI)
 
 ```bash
 claude mcp add gemini-lens -- uvx git+https://github.com/<your-username>/gemini-lens-mcp
@@ -176,10 +203,18 @@ claude mcp add gemini-lens -- uvx git+https://github.com/<your-username>/gemini-
 
 ---
 
-### Option 3: Hermes Agent
+### 4. Configure Codex / Cursor / Windsurf
 
-Add to your Hermes configuration file or MCP settings:
+In your IDE's **Settings** -> **Features** -> **MCP Servers** -> **Add New MCP Server**:
+- **Name:** `gemini-lens`
+- **Type:** `command`
+- **Command:** `uvx git+https://github.com/<your-username>/gemini-lens-mcp`
 
+---
+
+### 5. Configure Hermes Agent
+
+Add to your Hermes `config.yaml` or MCP section:
 ```yaml
 mcp_servers:
   gemini_lens:
@@ -187,33 +222,6 @@ mcp_servers:
     args:
       - "git+https://github.com/<your-username>/gemini-lens-mcp"
 ```
-
----
-
-### Option 4: Cursor / Windsurf
-
-Go to **Settings** -> **Features** -> **MCP Servers** -> **Add New MCP Server**:
-- **Name:** `gemini-lens`
-- **Type:** `command`
-- **Command:** `uvx git+https://github.com/<your-username>/gemini-lens-mcp`
-
----
-
-## ⚙️ How It Connects
-
-Gemini Lens automatically detects the best connection method available:
-
-1. **Active Local Bridge:** If a local OpenAI-compatible bridge daemon is running (`http://127.0.0.1:8000`), it connects to it.
-2. **Direct Antigravity CLI (`agy`):** Automatically finds your local `agy` installation on Windows, macOS, or Linux. If you've run `agy login` (with either a free or pro account), it runs directly through your session at $0 extra cost.
-3. **Google AI Studio API Key:** If `agy` is not installed, it falls back to the `GEMINI_API_KEY` environment variable (which is 100% free from [aistudio.google.com](https://aistudio.google.com)).
-
-### Optional Environment Variables
-
-| Variable | Description |
-|---|---|
-| `AGY_PATH` | Explicit path to your `agy` or `agy.exe` binary if installed in a custom location. |
-| `BRIDGE_URL` | Custom endpoint for a local bridge (default: `http://127.0.0.1:8000/v1/chat/completions`). |
-| `GEMINI_API_KEY` | Optional free API key fallback if Antigravity CLI is not installed. |
 
 ---
 
@@ -225,9 +233,9 @@ cd gemini-lens-mcp
 pip install -e .
 ```
 
-Run test:
+Verify all 24 tools:
 ```bash
-python -m gemini_lens_mcp.server
+python -c "from gemini_lens_mcp.server import mcp; print(len(mcp._tool_manager._tools), 'tools active')"
 ```
 
 ---

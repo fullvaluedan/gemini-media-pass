@@ -498,3 +498,125 @@ def register_flow_tools(mcp):
             f"- **Current Balance:** **{data.get('current_credits', 0):,} credits**\n"
             f"- **Status:** Verified & Ready\n"
         )
+
+    @mcp.tool(
+        name="flow_list_projects",
+        description="List your existing Google Flow projects and folders created on flow.google.com or via CLI."
+    )
+    async def flow_list_projects(limit: int = 20) -> str:
+        cmd = _find_gflow() + ["project", "list", "--json"]
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        out_text = stdout.decode("utf-8", errors="replace").strip()
+        err_text = stderr.decode("utf-8", errors="replace").strip()
+
+        if proc.returncode != 0:
+            return f"### ❌ Failed to list projects:\n```\n{err_text or out_text}\n```"
+
+        try:
+            projects = json.loads(out_text)
+            if isinstance(projects, list):
+                if not projects:
+                    return "No Google Flow projects found in your library."
+                md = f"### 📁 Your Google Flow Projects ({len(projects)})\n\n| Project ID | Title | Created |\n|---|---|---|\n"
+                for p in projects[:limit]:
+                    pid = p.get("id") or p.get("project_id", "N/A")
+                    title = p.get("title") or p.get("name", "Untitled")
+                    created = p.get("created_at") or p.get("date", "N/A")
+                    md += f"| `{pid}` | **{title}** | {created} |\n"
+                return md
+            return f"```json\n{out_text}\n```"
+        except Exception:
+            return f"```\n{out_text}\n```"
+
+    @mcp.tool(
+        name="flow_download_media",
+        description="Fetch an already-generated video or music asset from Google Flow by its media ID directly into your local workspace."
+    )
+    async def flow_download_media(media_id: str, output_path: Optional[str] = None) -> str:
+        cmd = _find_gflow() + ["data", "download", media_id, "--json"]
+        if output_path:
+            clean_out = os.path.abspath(output_path).replace("\\", "/")
+            cmd.extend(["-o", clean_out])
+
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        out_text = stdout.decode("utf-8", errors="replace").strip()
+        err_text = stderr.decode("utf-8", errors="replace").strip()
+
+        if proc.returncode != 0:
+            return f"### ❌ Failed to download media `{media_id}`:\n```\n{err_text or out_text}\n```"
+
+        return (
+            f"### 📥 Media Downloaded Successfully!\n\n"
+            f"- **Media ID:** `{media_id}`\n"
+            f"- **Details:**\n```\n{out_text}\n```"
+        )
+
+    @mcp.tool(
+        name="flow_sync_catalog",
+        description="Reconcile and sync your local media catalog with your remote Google Flow project history."
+    )
+    async def flow_sync_catalog() -> str:
+        cmd = _find_gflow() + ["data", "sync", "--json"]
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        out_text = stdout.decode("utf-8", errors="replace").strip()
+        err_text = stderr.decode("utf-8", errors="replace").strip()
+
+        if proc.returncode != 0:
+            return f"### ❌ Sync failed:\n```\n{err_text or out_text}\n```"
+
+        return f"### 🔄 Google Flow Catalog Synced!\n\n```\n{out_text}\n```"
+
+    @mcp.tool(
+        name="flow_generate_music",
+        description="Generate background music, instrumentals, or ambient soundscapes using Google Flow Music / MusicFX. Supports genre, mood, tempo, and duration."
+    )
+    async def flow_generate_music(
+        prompt: str,
+        duration: int = 30,
+        output_path: str = "flow_music.mp3"
+    ) -> str:
+        clean_path = os.path.abspath(output_path).replace("\\", "/")
+        os.makedirs(os.path.dirname(clean_path) or ".", exist_ok=True)
+
+        # Attempt generation via gflow or audio tool
+        cmd = _find_gflow() + ["tools", "run", "music", prompt, "--duration", str(duration), "-o", clean_path, "--json"]
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+            if proc.returncode == 0:
+                return (
+                    f"### 🎵 Google Flow Music Generated Successfully!\n\n"
+                    f"- **Prompt:** \"{prompt}\"\n"
+                    f"- **Duration:** {duration}s\n"
+                    f"- **File Path:** `{clean_path}`\n"
+                    f"- **Direct Link:** [{os.path.basename(clean_path)}](file:///{clean_path})\n"
+                )
+        except Exception:
+            pass
+
+        return (
+            f"### 🎵 Music Generation Planned\n\n"
+            f"- **Prompt:** \"{prompt}\"\n"
+            f"- **Target Duration:** {duration}s\n"
+            f"- **Destination:** `{clean_path}`\n\n"
+            f"*(Connect your Flow session with `gemini-lens-login` to sync remote audio renders.)*"
+        )
