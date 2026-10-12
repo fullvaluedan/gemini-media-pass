@@ -5,10 +5,10 @@ from typing import Optional
 
 try:
     from mcp.server.mcpserver import MCPServer
-    mcp = MCPServer("gemini-zero")
+    mcp = MCPServer("gemini-lens")
 except ImportError:
     from mcp.server.fastmcp import FastMCP
-    mcp = FastMCP("gemini-zero")
+    mcp = FastMCP("gemini-lens")
 
 from .runner import execute_query
 
