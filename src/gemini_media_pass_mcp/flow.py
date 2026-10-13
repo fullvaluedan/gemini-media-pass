@@ -29,6 +29,31 @@ COST_CATALOG = {
     "image": 5,
 }
 
+GEN_TIMEOUT = int(os.environ.get("GMP_FLOW_TIMEOUT_SECONDS", "900"))   # a Veo render can take minutes
+MAX_CREDITS = int(os.environ.get("GMP_FLOW_MAX_CREDITS", "40"))       # per call, unless the call raises it
+
+
+async def _run(cmd: List[str], timeout: int = 120):
+    """Run a gflow command with a time limit. Returns (returncode, stdout bytes, stderr bytes)."""
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        return 124, b"", f"gflow did not finish within {timeout} s and was stopped".encode()
+    return proc.returncode, out, err
+
+
+def spend_check(cost: int, max_credits: Optional[int]) -> Optional[str]:
+    """None when the cost fits the cap, else the refusal message. Nothing is spent on a refusal."""
+    cap = MAX_CREDITS if max_credits is None else max_credits
+    if cost > cap:
+        return (f"Refused: this would spend {cost} credits, over the cap of {cap}. Nothing was spent. "
+                f"Pass max_credits={cost} to allow it, or set GMP_FLOW_MAX_CREDITS.")
+    return None
+
+
 def _find_gflow() -> List[str]:
     """Finds the gflow executable command."""
     exe = shutil.which("gflow")
@@ -97,6 +122,16 @@ class CreditTracker:
         return data
 
     @classmethod
+    async def record_real_spend(cls, estimate: int) -> Dict[str, Any]:
+        """After a generation: read the real balance from Flow and store it; fall back to the estimate."""
+        before = cls.load().get("current_credits")
+        real = await _fetch_credits_raw()
+        if real.get("authenticated") and before is not None:
+            spent = max(0, before - real.get("credits", before))
+            return cls.record_spend(spent or estimate)
+        return cls.record_spend(estimate)
+
+    @classmethod
     def record_spend(cls, amount: int, gen_type: str = "video") -> Dict[str, Any]:
         data = cls.load()
         if not data:
@@ -137,16 +172,11 @@ async def _fetch_credits_raw(profile: str = "default") -> Dict[str, Any]:
         cmd.extend(["--profile", profile])
 
     try:
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             if "No profiles found" in out_text or "No profiles found" in err_text:
                 return {"authenticated": False, "error": "not_authenticated"}
             return {"authenticated": False, "error": err_text or out_text}
@@ -225,7 +255,8 @@ def register_flow_tools(mcp):
         resolution: Optional[str] = None,
         output_dir: Optional[str] = None,
         output_filename: Optional[str] = None,
-        count: int = 1
+        count: int = 1,
+        max_credits: Optional[int] = None
     ) -> str:
         norm_orient = orientation.lower().strip()
         if norm_orient in ["vertical", "portrait", "9:16", "short", "shorts", "tiktok", "reel"]:
@@ -270,6 +301,9 @@ def register_flow_tools(mcp):
 
         unit_cost = COST_CATALOG.get(chosen_model, 20)
         total_cost = unit_cost * min(max(1, count), 4)
+        refusal = spend_check(total_cost, max_credits)
+        if refusal:
+            return refusal
 
         cmd = _find_gflow() + ["video"]
         if chosen_mode == "i2v":
@@ -298,23 +332,18 @@ def register_flow_tools(mcp):
             exact_path = os.path.join(norm_out_dir, clean_name).replace("\\", "/")
             cmd.extend(["-o", exact_path])
 
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             return (
                 f"### ❌ Google Flow Video Generation Failed\n\n"
                 f"**Error Details:**\n```\n{err_text or out_text}\n```\n\n"
                 f"*(Zero credits deducted — run aborted before submission.)*\n"
             )
 
-        spend_info = CreditTracker.record_spend(total_cost, gen_type="video")
+        spend_info = await CreditTracker.record_real_spend(total_cost)
         curr_credits = spend_info.get("current", 0)
         pct_left = spend_info.get("pct_remaining", 0.0)
         warning_lvl = spend_info.get("warning_level")
@@ -414,19 +443,14 @@ def register_flow_tools(mcp):
         if output_file:
             cmd.extend(["-o", os.path.abspath(output_file)])
 
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             return f"### ❌ Extend Video Failed\n\n```\n{err_text or out_text}\n```"
 
-        spend_info = CreditTracker.record_spend(20, gen_type="extend")
+        spend_info = await CreditTracker.record_real_spend(20)
         curr_credits = spend_info.get("current", 0)
         pct_left = spend_info.get("pct_remaining", 0.0)
 
@@ -445,12 +469,7 @@ def register_flow_tools(mcp):
     )
     async def flow_list_models() -> str:
         cmd = _find_gflow() + ["models", "--json"]
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
 
         try:
@@ -505,16 +524,11 @@ def register_flow_tools(mcp):
     )
     async def flow_list_projects(limit: int = 20) -> str:
         cmd = _find_gflow() + ["project", "list", "--json"]
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             return f"### ❌ Failed to list projects:\n```\n{err_text or out_text}\n```"
 
         try:
@@ -543,16 +557,11 @@ def register_flow_tools(mcp):
             clean_out = os.path.abspath(output_path).replace("\\", "/")
             cmd.extend(["-o", clean_out])
 
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             return f"### ❌ Failed to download media `{media_id}`:\n```\n{err_text or out_text}\n```"
 
         return (
@@ -567,16 +576,11 @@ def register_flow_tools(mcp):
     )
     async def flow_sync_catalog() -> str:
         cmd = _find_gflow() + ["data", "sync", "--json"]
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        stdout, stderr = await proc.communicate()
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
-        if proc.returncode != 0:
+        if rc != 0:
             return f"### ❌ Sync failed:\n```\n{err_text or out_text}\n```"
 
         return f"### 🔄 Google Flow Catalog Synced!\n\n```\n{out_text}\n```"
@@ -593,30 +597,10 @@ def register_flow_tools(mcp):
         clean_path = os.path.abspath(output_path).replace("\\", "/")
         os.makedirs(os.path.dirname(clean_path) or ".", exist_ok=True)
 
-        # Attempt generation via gflow or audio tool
+        # gflow exposes music as a prompt tool; report exactly what happened, never a fake success
         cmd = _find_gflow() + ["tools", "run", "music", prompt, "--duration", str(duration), "-o", clean_path, "--json"]
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await proc.communicate()
-            if proc.returncode == 0:
-                return (
-                    f"### 🎵 Google Flow Music Generated Successfully!\n\n"
-                    f"- **Prompt:** \"{prompt}\"\n"
-                    f"- **Duration:** {duration}s\n"
-                    f"- **File Path:** `{clean_path}`\n"
-                    f"- **Direct Link:** [{os.path.basename(clean_path)}](file:///{clean_path})\n"
-                )
-        except Exception:
-            pass
-
-        return (
-            f"### 🎵 Music Generation Planned\n\n"
-            f"- **Prompt:** \"{prompt}\"\n"
-            f"- **Target Duration:** {duration}s\n"
-            f"- **Destination:** `{clean_path}`\n\n"
-            f"*(Connect your Flow session with `gemini-media-pass-login` to sync remote audio renders.)*"
-        )
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT)
+        if rc == 0 and os.path.isfile(clean_path):
+            return f"Music saved: `{clean_path}` ({duration} s, prompt: {prompt})"
+        why = (stderr or stdout).decode("utf-8", errors="replace").strip()[:800]
+        return f"Music was not generated (gflow exit {rc}). Nothing was saved.\n```\n{why}\n```"

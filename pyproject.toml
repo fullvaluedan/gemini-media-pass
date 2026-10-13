@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gemini-media-pass"
-version = "0.1.0"
-description = "The All-Access Google Media & Multimodal MCP Server: Video Analysis, Veo 3.1 AI Video Generation, Stitch UI Studio, Flow Music, Imagen 3, Gemini TTS, and 2M Docs for Claude, Hermes, and Cursor."
+version = "0.2.0"
+description = "The All-Access Google Media & Multimodal MCP Server: Video Analysis, Veo 3.1 AI Video Generation, Stitch UI Studio, Flow Music, image generation, Gemini TTS, and 2M Docs for Claude, Hermes, and Cursor."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
-    { name = "Community", email = "dev@example.com" }
+    { name = "fullvaluedan" }
 ]
 keywords = [
     "mcp",
@@ -42,6 +42,13 @@ dependencies = [
     "mcp>=1.0.0",
     "edge-tts>=6.1.0",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 [project.scripts]
 gemini-media-pass = "gemini_media_pass_mcp.server:main"
