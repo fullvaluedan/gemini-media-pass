@@ -26,11 +26,10 @@ def load_dotenv():
 
 load_dotenv()
 
-DEFAULT_BRIDGE_URL = "http://127.0.0.1:8000/v1/chat/completions"
-
 def get_bridge_url() -> str:
-    """Returns the bridge URL from environment variable or default."""
-    return os.environ.get("BRIDGE_URL", DEFAULT_BRIDGE_URL)
+    """The local bridge URL, or "" when BRIDGE_URL is not set. Off by default: any process listening on that
+    port would receive every prompt. Example: BRIDGE_URL=http://127.0.0.1:8000/v1/chat/completions"""
+    return os.environ.get("BRIDGE_URL", "").strip()
 
 def find_agy_binary() -> Optional[str]:
     """

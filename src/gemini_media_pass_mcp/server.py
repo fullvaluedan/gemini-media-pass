@@ -14,7 +14,7 @@ from .runner import execute_query, execute_tts
 
 @mcp.tool(
     name="ask_gemini_pro",
-    description="Consult Google Gemini 3.1 Pro (via Antigravity subscription or API) for deep reasoning, mathematical proofs, alternative approaches, multi-step code planning, or a second opinion. $0 cost when using subscription."
+    description="Consult Google Gemini 3.1 Pro (via Antigravity subscription or API) for deep reasoning, mathematical proofs, alternative approaches, multi-step code planning, or a second opinion. No extra cost on an Antigravity subscription."
 )
 async def ask_gemini_pro(prompt: str) -> str:
     """Consult Gemini 3.1 Pro for deep reasoning and second opinions."""
@@ -22,7 +22,7 @@ async def ask_gemini_pro(prompt: str) -> str:
 
 @mcp.tool(
     name="ask_gemini_flash",
-    description="Fast, low-latency task delegation to Google Gemini 3.8 Flash. Ideal for quick summarization, data extraction, and high-speed batch tasks. $0 cost when using subscription."
+    description="Fast, low-latency task delegation to Google Gemini 3.8 Flash. Ideal for quick summarization, data extraction, and high-speed batch tasks. No extra cost on an Antigravity subscription."
 )
 async def ask_gemini_flash(prompt: str) -> str:
     """Fast task delegation to Gemini 3.8 Flash."""
@@ -130,30 +130,32 @@ async def gemini_generate_image(
         f"Once generated, report the exact file path where it was saved."
     )
 
-    response = await execute_query("gemini-3.8-flash-high", instruction)
-
-    # Extract file path if present
-    match = re.search(r'([A-Za-z]:\\[^`\r\n]+\.jpg)', response)
-    if match:
-        img_path = match.group(1).replace("\\", "/")
-        return (
-            f"### Image Generated Successfully!\n\n"
-            f"- **File Path:** `{img_path}`\n"
-            f"- **File Link:** [{clean_name}.jpg](file:///{img_path})\n\n"
-            f"![{clean_name}](file:///{img_path})\n\n"
-            f"{response}"
-        )
+    response = await execute_query("gemini-3.8-flash-high", instruction, writes=True)
+    img_path = find_image_path(response)
+    if img_path and os.path.isfile(img_path):
+        return f"Image saved: `{img_path}`\n\n{response}"
+    if img_path:
+        return f"Gemini reported `{img_path}`, but no file exists there.\n\n{response}"
     return response
+
+
+IMAGE_PATH = re.compile(r"([A-Za-z]:[\\/][^`\r\n\"']+?\.(?:png|jpe?g|webp)|/[^`\r\n\"' ]+?\.(?:png|jpe?g|webp))", re.I)
+
+
+def find_image_path(text: str) -> Optional[str]:
+    """The first image file path in a reply (Windows or POSIX, png, jpg or webp), with forward slashes."""
+    m = IMAGE_PATH.search(text or "")
+    return m.group(1).replace("\\", "/") if m else None
 
 @mcp.tool(
     name="gemini_text_to_speech",
-    description="Convert text into natural spoken audio (.mp3 / .wav) using Google Gemini multimodal audio generation. Choose from voices ('Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede') and customize delivery tone and pacing. $0 cost."
+    description="Convert text into natural spoken audio (.mp3 / .wav) using Google Gemini multimodal audio generation. Choose from voices ('Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede') and customize delivery tone and pacing."
 )
 async def gemini_text_to_speech(
     text: str,
     voice: str = "Puck",
-    output_path: str = "generated_speech.mp3",
-    style_instruction: str = "Speak clearly in a natural, engaging tone."
+    output_path: str = "generated_speech.wav",
+    style_instruction: str = ""
 ) -> str:
     """Generate spoken audio from text using Gemini Audio / Neural Speech."""
     return await execute_tts(text, voice, output_path, style_instruction)

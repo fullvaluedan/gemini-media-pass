@@ -24,7 +24,7 @@ def register_stitch_tools(mcp):
     )
     async def stitch_create_project(title: str = "New UI Project") -> str:
         prompt = f"Please use Stitch create_project with title='{title}' to create a new design project and report the project ID."
-        return await execute_query("gemini-3.8-flash-high", prompt)
+        return await execute_query("gemini-3.8-flash-high", prompt, writes=True)
 
     @mcp.tool(
         name="stitch_list_screens",
@@ -60,7 +60,7 @@ def register_stitch_tools(mcp):
         )
         if design_system_id:
             instruction += f"- designSystem: '{design_system_id}'\n"
-        return await execute_query("gemini-3.8-flash-high", instruction)
+        return await execute_query("gemini-3.8-flash-high", instruction, writes=True)
 
     @mcp.tool(
         name="stitch_apply_design_system",
@@ -68,4 +68,4 @@ def register_stitch_tools(mcp):
     )
     async def stitch_apply_design_system(project_id: str, design_system_id: str) -> str:
         prompt = f"Please use Stitch apply_design_system to apply designSystemId='{design_system_id}' to projectId='{project_id}'."
-        return await execute_query("gemini-3.8-flash-high", prompt)
+        return await execute_query("gemini-3.8-flash-high", prompt, writes=True)
