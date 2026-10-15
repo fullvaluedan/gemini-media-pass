@@ -165,6 +165,12 @@ pytest -q
 
 Tests never touch the network, `agy` or `gflow`.
 
+## ⚖️ Disclaimer & Terms of Service
+
+* **Official Gemini API (Option 1):** Operates under the official [Google APIs Terms of Service](https://developers.google.com/terms) and [Google Generative AI Additional Terms of Service](https://ai.google.dev/terms). Fully supported, intended, and compliant.
+* **Google Flow & Studio Connectors (Option 2):** Connects to personal browser sessions for local interoperability and workflow automation. It is an independent, unofficial client and is not affiliated with, maintained by, or endorsed by Google LLC.
+* **Trademarks:** Google, Gemini, Veo, Stitch, and Imagen are registered trademarks of Google LLC.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
