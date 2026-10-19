@@ -102,7 +102,7 @@ class CreditTracker:
             return current
 
         api_data = await _fetch_credits_raw(profile)
-        if not api_data.get("authenticated"):
+        if not api_data.get("authenticated") or api_data.get("balance_unknown"):
             return api_data
 
         credits = api_data.get("credits", 0)
@@ -176,6 +176,11 @@ async def _fetch_credits_raw(profile: str = "default") -> Dict[str, Any]:
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
+        # gflow issue #795: accounts served from flow.google.com never get a credits token.
+        # The session is fine and generation works, so this is "balance unknown", not "signed out".
+        if "aisandbox-auth" in out_text or "aisandbox-auth" in err_text:
+            return {"authenticated": True, "balance_unknown": True}
+
         if rc != 0:
             if "No profiles found" in out_text or "No profiles found" in err_text:
                 return {"authenticated": False, "error": "not_authenticated"}
@@ -213,6 +218,9 @@ def register_flow_tools(mcp):
         data = await CreditTracker.get_or_sync(force=force_refresh, profile=profile)
         if not data.get("authenticated"):
             return _format_not_authenticated_msg()
+        if data.get("balance_unknown"):
+            return ("Signed in to Google Flow, but gflow cannot read the balance for this account "
+                    "(gflow issue #795). Check the balance in Flow at flow.google.com. Generation still works.")
 
         start_credits = data.get("start_of_day_credits", 0)
         current_credits = data.get("current_credits", start_credits)
@@ -508,6 +516,8 @@ def register_flow_tools(mcp):
         data = await CreditTracker.get_or_sync()
         if not data.get("authenticated"):
             return _format_not_authenticated_msg()
+        if data.get("balance_unknown"):
+            return "### 🟢 Google Flow Account Status: Active\n\n- **Balance:** unreadable (gflow issue #795), check it in Flow\n"
 
         return (
             f"### 🟢 Google Flow Account Status: Active\n\n"

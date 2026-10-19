@@ -91,3 +91,23 @@ def test_gflow_timeout_is_reported(monkeypatch):
 def test_image_path_found_on_any_os(text, path):
     from gemini_media_pass_mcp.server import find_image_path
     assert find_image_path(text) == path
+
+
+def test_unreadable_balance_is_not_signed_out(monkeypatch, tmp_path):
+    # gflow issue #795: the session works but the credits call fails. That must not block generation.
+    async def fake_run(cmd, timeout=120):
+        return 1, b'{"status": "fail", "error": {"type": "https://gflow-cli.dev/errors/aisandbox-auth"}}', b""
+
+    monkeypatch.setattr(flow, "_run", fake_run)
+    monkeypatch.setattr(flow, "TRACKER_FILE", tmp_path / "tracker.json")
+    data = asyncio.run(flow.CreditTracker.get_or_sync(force=True))
+    assert data["authenticated"] is True and data["balance_unknown"] is True
+    assert not (tmp_path / "tracker.json").exists()     # no fake balance stored
+
+
+def test_missing_profile_is_still_signed_out(monkeypatch):
+    async def fake_run(cmd, timeout=120):
+        return 1, b"", b"No profiles found"
+
+    monkeypatch.setattr(flow, "_run", fake_run)
+    assert asyncio.run(flow._fetch_credits_raw())["authenticated"] is False
