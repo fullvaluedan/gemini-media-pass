@@ -31,6 +31,7 @@ COST_CATALOG = {
 
 GEN_TIMEOUT = int(os.environ.get("GMP_FLOW_TIMEOUT_SECONDS", "900"))   # a Veo render can take minutes
 MAX_CREDITS = int(os.environ.get("GMP_FLOW_MAX_CREDITS", "40"))       # per call, unless the call raises it
+BALANCE_UNREADABLE = re.compile(r"returned no access token|aisandbox-pa authentication failed", re.I)
 
 
 async def _run(cmd: List[str], timeout: int = 120):
@@ -43,6 +44,58 @@ async def _run(cmd: List[str], timeout: int = 120):
         await proc.wait()
         return 124, b"", f"gflow did not finish within {timeout} s and was stopped".encode()
     return proc.returncode, out, err
+
+
+def balance_line(spend_info: Dict[str, Any]) -> str:
+    """One line for the balance after a spend; honest when Flow does not report a balance."""
+    if spend_info.get("current") is None:
+        return "unknown (Flow does not report a balance for this account; check flow.google.com)"
+    return f"{spend_info['current']:,} credits ({spend_info.get('pct_remaining')}% left)"
+
+
+def parse_video_json(out_text: str) -> Dict[str, Any]:
+    """Pull saved files and media ids out of gflow --json output (one JSON object per line or one block)."""
+    files: List[str] = []
+    media_ids: List[str] = []
+    errors: List[str] = []
+    blocks = [out_text] + out_text.splitlines()
+    for n, block in enumerate(blocks):
+        block = block.strip()
+        if not block.startswith("{"):
+            continue
+        try:
+            obj = json.loads(block)
+        except Exception:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        for key in ("local_path", "output"):
+            v = obj.get(key)
+            if isinstance(v, str) and v and v not in files:
+                files.append(v)
+        for v in obj.get("files") or []:
+            if isinstance(v, str) and v not in files:
+                files.append(v)
+        for v in [obj.get("media_id")] + list(obj.get("media_ids") or []):
+            if isinstance(v, str) and v and v not in media_ids:
+                media_ids.append(v)
+        if obj.get("status") == "fail" or obj.get("succeeded") is False:
+            errors.append(obj.get("error_message") or ", ".join(obj.get("failure_reasons") or []) or "generation failed")
+        if n == 0:
+            break   # the whole text was one JSON object
+    return {"files": [f.replace("\\", "/") for f in files], "media_ids": media_ids, "errors": errors}
+
+
+def reference_args(entity: Optional[str], name: Optional[str] = None) -> List[str]:
+    """--reference-entity flags for a Flow Character (avatar). Several ids may be comma separated."""
+    args: List[str] = []
+    ids = [e.strip() for e in (entity or "").split(",") if e.strip()]
+    names = [n.strip() for n in (name or "").split(",") if n.strip()]
+    for i, eid in enumerate(ids):
+        args += ["--reference-entity", eid]
+        if i < len(names):
+            args += ["--reference-entity-name", names[i]]
+    return args
 
 
 def spend_check(cost: int, max_credits: Optional[int]) -> Optional[str]:
@@ -134,7 +187,7 @@ class CreditTracker:
             return current
 
         api_data = await _fetch_credits_raw(profile)
-        if not api_data.get("authenticated"):
+        if not api_data.get("authenticated") or api_data.get("balance_unknown"):
             return api_data
 
         credits = api_data.get("credits", 0)
@@ -168,11 +221,12 @@ class CreditTracker:
         data = cls.load()
         if not data:
             return {
-                "start_of_day": amount,
-                "current": 0,
+                "start_of_day": None,
+                "current": None,
                 "spent": amount,
-                "pct_remaining": 0.0,
-                "warning_level": None
+                "pct_remaining": None,
+                "warning_level": None,
+                "balance_unknown": True,
             }
         data["current_credits"] = max(0, data.get("current_credits", 0) - amount)
         data["generations_count"] = data.get("generations_count", 0) + 1
@@ -211,6 +265,9 @@ async def _fetch_credits_raw(profile: str = "default") -> Dict[str, Any]:
         if rc != 0:
             if "No profiles found" in out_text or "No profiles found" in err_text:
                 return {"authenticated": False, "error": "not_authenticated"}
+            if BALANCE_UNREADABLE.search(out_text + err_text):
+                # Signed in, but Flow gives this account no token for the balance (gflow issue #795)
+                return {"authenticated": True, "balance_unknown": True}
             return {"authenticated": False, "error": err_text or out_text}
 
         data = json.loads(out_text)
@@ -245,6 +302,9 @@ def register_flow_tools(mcp):
         data = await CreditTracker.get_or_sync(force=force_refresh, profile=profile)
         if not data.get("authenticated"):
             return _format_not_authenticated_msg()
+        if data.get("balance_unknown"):
+            return ("Signed in to Google Flow, but Flow does not report a credit balance for this account "
+                    "(gflow issue #795). Generation still works. Check your balance at flow.google.com.")
 
         start_credits = data.get("start_of_day_credits", 0)
         current_credits = data.get("current_credits", start_credits)
@@ -273,7 +333,8 @@ def register_flow_tools(mcp):
             "Generate cinematic AI videos using Google Flow (Veo 3.1 & Omni Flash) with your Google AI Pro subscription. "
             "Supports vertical (9:16 Shorts/Reels/TikTok) and horizontal (16:9 Cinematic), durations 4s/6s/8s/10s, "
             "models (veo-fast, veo-quality, veo-lite, omni-flash), Text-to-Video and Image-to-Video. "
-            "Features daily predictable credit ledger with 50% and 20% milestone alert banners!"
+            "Pass reference_entity (from flow_list_characters) and its project_id to keep your avatar consistent. "
+            "For several shots (reactions, B-roll) use flow_shoot_shot_list instead: it spends fewer generations."
         )
     )
     async def flow_generate_video(
@@ -288,7 +349,10 @@ def register_flow_tools(mcp):
         output_dir: Optional[str] = None,
         output_filename: Optional[str] = None,
         count: int = 1,
-        max_credits: Optional[int] = None
+        max_credits: Optional[int] = None,
+        reference_entity: Optional[str] = None,
+        reference_entity_name: Optional[str] = None,
+        project_id: Optional[str] = None,
     ) -> str:
         norm_orient = orientation.lower().strip()
         if norm_orient in ["vertical", "portrait", "9:16", "short", "shorts", "tiktok", "reel"]:
@@ -358,6 +422,9 @@ def register_flow_tools(mcp):
 
         if resolution and resolution in ["360p", "720p"] and chosen_model == "omni-flash":
             cmd.extend(["--resolution", resolution])
+        cmd.extend(reference_args(reference_entity, reference_entity_name))
+        if project_id:
+            cmd.extend(["--project", project_id])
 
         if output_filename:
             clean_name = output_filename if output_filename.endswith(".mp4") else f"{output_filename}.mp4"
@@ -376,12 +443,14 @@ def register_flow_tools(mcp):
             )
 
         spend_info = await CreditTracker.record_real_spend(total_cost)
-        curr_credits = spend_info.get("current", 0)
-        pct_left = spend_info.get("pct_remaining", 0.0)
+        curr_credits = spend_info.get("current") or 0
+        pct_left = spend_info.get("pct_remaining")
         warning_lvl = spend_info.get("warning_level")
 
         milestone_banner = ""
-        if warning_lvl == "20_percent" or pct_left <= 20.0:
+        if pct_left is None:
+            pass
+        elif warning_lvl == "20_percent" or pct_left <= 20.0:
             milestone_banner = (
                 "> 🚨 **CRITICAL CREDIT ALERT (20% RESERVE)**\n"
                 f"> You are down to **{curr_credits:,} credits ({pct_left}%)** of your starting balance!\n"
@@ -393,15 +462,9 @@ def register_flow_tools(mcp):
                 f"> You have consumed half your daily credits. **{curr_credits:,} credits ({pct_left}%)** remaining.\n\n"
             )
 
-        video_files: List[str] = []
-        try:
-            res_json = json.loads(out_text)
-            if isinstance(res_json, dict):
-                if "files" in res_json and isinstance(res_json["files"], list):
-                    video_files = res_json["files"]
-                elif "output" in res_json:
-                    video_files = [res_json["output"]]
-        except Exception:
+        parsed = parse_video_json(out_text)
+        video_files: List[str] = parsed["files"]
+        if not video_files:
             found = re.findall(r'([A-Za-z]:\\[^`\r\n]+\.mp4|[A-Za-z]:/[^`\r\n]+\.mp4|/[^`\r\n]+\.mp4)', out_text)
             video_files = [f.replace("\\", "/") for f in found]
 
@@ -436,14 +499,14 @@ def register_flow_tools(mcp):
             f"### 🎬 Google Flow Video Generated Successfully!\n\n"
             f"#### 💳 Daily Credit Tracker Ledger\n"
             f"- **Operation Cost:** -`{total_cost}` credits (`{chosen_model}`)\n"
-            f"- **Balance Remaining:** **{curr_credits:,} credits ({pct_left}% left)**\n"
-            f"- **Estimated Veo Fast Clips Remaining:** ~`{curr_credits // 20}` clips\n\n"
+            f"- **Balance Remaining:** {balance_line(spend_info)}\n\n"
             f"#### 📹 Video Specifications\n"
             f"- **Prompt:** \"{prompt}\"\n"
             f"- **Orientation:** {orient_label}\n"
             f"- **Duration:** {dur} seconds\n"
             f"- **Model:** `{chosen_model}`\n"
-            f"- **Mode:** `{chosen_mode.upper()}`\n\n"
+            f"- **Mode:** `{chosen_mode.upper()}`\n"
+            f"- **Media IDs:** {', '.join(f'`{m}`' for m in parsed['media_ids']) or 'not reported'} (use for upscale / extend)\n\n"
             f"#### 📁 Output Media Files\n"
             f"{files_text}\n"
         )
@@ -483,14 +546,12 @@ def register_flow_tools(mcp):
             return f"### ❌ Extend Video Failed\n\n```\n{err_text or out_text}\n```"
 
         spend_info = await CreditTracker.record_real_spend(20)
-        curr_credits = spend_info.get("current", 0)
-        pct_left = spend_info.get("pct_remaining", 0.0)
 
         return (
             f"### 🎬 Video Extended Successfully (+8 Seconds)!\n\n"
             f"#### 💳 Daily Credit Tracker Ledger\n"
             f"- **Operation Cost:** -20 credits\n"
-            f"- **Balance Remaining:** **{curr_credits:,} credits ({pct_left}% left)**\n\n"
+            f"- **Balance Remaining:** {balance_line(spend_info)}\n\n"
             f"**Continuation Prompt:** \"{prompt}\"\n"
             f"**Aspect Ratio:** `{aspect}`\n"
         )
@@ -540,6 +601,10 @@ def register_flow_tools(mcp):
         data = await CreditTracker.get_or_sync()
         if not data.get("authenticated"):
             return _format_not_authenticated_msg()
+        if data.get("balance_unknown"):
+            return ("### Google Flow Account Status: Active\n\n"
+                    "Signed in and ready. Flow does not report a credit balance for this account (gflow issue #795); "
+                    "check it at flow.google.com.")
 
         return (
             f"### 🟢 Google Flow Account Status: Active\n\n"
@@ -565,6 +630,8 @@ def register_flow_tools(mcp):
 
         try:
             projects = json.loads(out_text)
+            if isinstance(projects, dict) and isinstance(projects.get("projects"), list):
+                projects = projects["projects"]
             if isinstance(projects, list):
                 if not projects:
                     return "No Google Flow projects found in your library."

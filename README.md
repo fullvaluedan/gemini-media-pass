@@ -59,7 +59,7 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (24)
+## Tools (29)
 
 ### Understanding
 | Tool | Parameters | What it does |
@@ -90,6 +90,27 @@ Limits depend on your Google plan and change often, so this README does not repe
 | `flow_get_credits` | `force_refresh` | Live credit balance |
 | `flow_list_models` | none | Video and image models with estimated costs |
 | `flow_auth_status` | none | Session health |
+
+### Shot lists, avatars and scene remakes
+| Tool | Parameters | What it does |
+|---|---|---|
+| `flow_shoot_shot_list` | `shots`, `orientation`, `model`, `resolution`, `confirm`, `max_credits`, `reference_entity`, `join` | Footage for many shots (reactions, B-roll, avatar shots) as separate trimmed clips plus `shotlist.json`/`.csv` for your editor. Returns a plan and credit estimate first; renders only with `confirm=true` |
+| `flow_upscale_video` | `media_id`, `scale` | Flow's own 1080p upscale (measured credit-free by gflow) |
+| `flow_list_characters` | `project_id` | Your Flow Characters (avatars) and their `reference_entity` ids |
+| `flow_create_character` | `project_id`, `name`, `face_prompt`, `body_prompt`, `voice` | Create an avatar (spends image credits) |
+| `flow_remake_scene` | `video_path`, `changes`, `start_seconds`, `end_seconds`, `confirm` | Grab and describe a scene's first and last frame, then render it again from frame to frame with your changes |
+
+How shot lists save generations:
+- Each shot renders at the shortest length Flow allows that covers it (4, 6, 8, or 10 s on omni-flash) and is trimmed
+  locally, so a 2 s reaction is a 4 s render, not 8 s.
+- With `model="auto"` (default), shots of 4 s or less use `veo-lite`, the cheapest model.
+- Shots with the same `group` (same subject and setting, for example a run of reactions) are packed into one
+  generation as timed beats and cut apart afterwards: four 2 s reactions cost one generation.
+- Identical shots render once, and shots already rendered in the output folder are reused on the next run.
+- Clips are delivered separately for editing (DaVinci Resolve or similar); `join=true` adds a preview.
+
+Flow cannot render 2 s or 5 s clips or 1080p directly. Short lengths come from trimming, 1080p from Flow's upscale.
+ffmpeg comes from the `imageio-ffmpeg` dependency if it is not on your PATH.
 
 ### Google Stitch
 | Tool | Parameters | What it does |
@@ -153,6 +174,7 @@ Cursor, Windsurf, Codex: add an MCP server of type `command` running
 | `GMP_FLOW_MAX_CREDITS` | 40 | Credit cap per Flow call |
 | `GMP_FLOW_TIMEOUT_SECONDS` | 900 | Per Flow render |
 | `GMP_EDGE_VOICE` | unset | Any edge-tts voice, for example `en-US-AndrewNeural` |
+| `GMP_FFMPEG_TIMEOUT_SECONDS` | 600 | Per ffmpeg cut or join |
 | `GMP_GFLOW_KEYCHAIN` | unset | macOS: Flow tools skip gflow's "Chrome Safe Storage" Keychain read, which prompts on every call. `1` runs gflow unchanged |
 
 ## Development
