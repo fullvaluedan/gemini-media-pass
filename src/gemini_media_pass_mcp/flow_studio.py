@@ -233,9 +233,31 @@ async def generate_unit(u: Unit, aspect: str, raw_dir: str, entity: Optional[str
     text = out.decode("utf-8", errors="replace")
     parsed = parse_video_json(text)
     if rc != 0 or parsed["errors"] or not parsed["files"]:
-        why = "; ".join(parsed["errors"]) or err.decode("utf-8", errors="replace").strip()[-800:] or text[-800:]
-        return {"files": parsed["files"], "media_ids": parsed["media_ids"], "error": why or f"gflow exit {rc}"}
+        return {"files": parsed["files"], "media_ids": parsed["media_ids"],
+                "error": failure_reason(rc, parsed["errors"], text, err.decode("utf-8", errors="replace"))}
     return {"files": parsed["files"], "media_ids": parsed["media_ids"], "error": None}
+
+
+def failure_reason(rc: int, errors: List[str], out_text: str, err_text: str) -> str:
+    """Why a gflow run failed, from its JSON error fields and stderr, never just 'generation failed'."""
+    detail: List[str] = [e for e in errors if e and e != "generation failed"]
+    for block in [out_text] + out_text.splitlines():
+        try:
+            obj = json.loads(block)
+        except Exception:
+            continue
+        if isinstance(obj, dict):
+            for k in ("detail", "error_detail", "title", "error"):
+                v = obj.get(k)
+                if isinstance(v, str) and v and v not in detail:
+                    detail.append(v)
+    tail = [ln for ln in err_text.strip().splitlines() if ln.strip() and not ln.lstrip().startswith("{")][-3:]
+    detail += [ln.strip() for ln in tail if ln.strip() not in detail]
+    reason = "; ".join(detail) or f"gflow exit {rc} with no error text"
+    if "no finished video within" in reason:
+        reason += (" (Flow may have rejected the clip on its side, for example 'Audio generation failed'; "
+                   "Flow refunds failed generations. Check the project at flow.google.com.)")
+    return reason[:1200]
 
 
 async def upscale(media_id: str, out_dir: str, scale: str = "1080p", project_id: Optional[str] = None) -> Dict[str, Any]:

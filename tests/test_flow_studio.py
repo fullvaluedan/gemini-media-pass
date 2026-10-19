@@ -189,3 +189,10 @@ def test_character_tools_read_gflow_json(monkeypatch):
     flow_studio.register_studio_tools(mcp)
     assert "| Dan | `e1` |" in asyncio.run(mcp.tools["flow_list_characters"]("p1"))
     assert "`e2`" in asyncio.run(mcp.tools["flow_create_character"]("p1", "Dan 2", "face"))
+
+
+def test_failure_reason_keeps_gflow_detail():
+    out = json.dumps({"status": "fail", "detail": "agent-only composer: no finished video within 600s of submit"})
+    why = flow_studio.failure_reason(9, ["generation failed"], out, "")
+    assert "no finished video within 600s" in why and "refunds failed generations" in why
+    assert flow_studio.failure_reason(2, [], "", "Error: bad flag\n") == "Error: bad flag"
