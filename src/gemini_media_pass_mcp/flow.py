@@ -54,11 +54,43 @@ def spend_check(cost: int, max_credits: Optional[int]) -> Optional[str]:
     return None
 
 
+NOKEYCHAIN_SHIM = str(Path(__file__).with_name("gflow_nokeychain.py"))
+
+
+def _gflow_python(exe: str) -> Optional[str]:
+    """The Python interpreter named in a gflow script's shebang, or None."""
+    try:
+        with open(exe, "rb") as f:
+            first = f.readline(512).decode("utf-8", "replace").strip()
+    except OSError:
+        return None
+    if not first.startswith("#!"):
+        return None
+    interp = first[2:].strip().split()[0] if first[2:].strip() else ""
+    if os.path.basename(interp).startswith("python") and os.path.exists(interp):
+        return interp
+    return None
+
+
+def _skip_keychain(cmd: List[str]) -> List[str]:
+    """On macOS, run gflow through the launcher that skips the Chrome Safe Storage Keychain prompt.
+    Set GMP_GFLOW_KEYCHAIN=1 to run gflow as is."""
+    if sys.platform != "darwin" or os.environ.get("GMP_GFLOW_KEYCHAIN") == "1":
+        return cmd
+    if len(cmd) == 1:
+        py = _gflow_python(cmd[0])
+        if py:
+            return [py, "-I", NOKEYCHAIN_SHIM]
+    elif cmd[1:] == ["-m", "gflow_cli"]:
+        return [cmd[0], "-I", NOKEYCHAIN_SHIM]
+    return cmd
+
+
 def _find_gflow() -> List[str]:
     """Finds the gflow executable command."""
     exe = shutil.which("gflow")
     if exe:
-        return [exe]
+        return _skip_keychain([exe])
     candidates = [
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python311\Scripts\gflow.exe"),
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python312\Scripts\gflow.exe"),
@@ -67,8 +99,8 @@ def _find_gflow() -> List[str]:
     ]
     for c in candidates:
         if os.path.exists(c):
-            return [c]
-    return [sys.executable, "-m", "gflow_cli"]
+            return _skip_keychain([c])
+    return _skip_keychain([sys.executable, "-m", "gflow_cli"])
 
 class CreditTracker:
     @staticmethod

@@ -91,3 +91,36 @@ def test_gflow_timeout_is_reported(monkeypatch):
 def test_image_path_found_on_any_os(text, path):
     from gemini_media_pass_mcp.server import find_image_path
     assert find_image_path(text) == path
+
+
+def _fake_gflow(tmp_path, interp):
+    exe = tmp_path / "gflow"
+    exe.write_text(f"#!{interp}\nimport sys\n")
+    return str(exe)
+
+
+def test_macos_gflow_skips_keychain_prompt(monkeypatch, tmp_path):
+    monkeypatch.setattr(flow.sys, "platform", "darwin")
+    monkeypatch.delenv("GMP_GFLOW_KEYCHAIN", raising=False)
+    py = tmp_path / "python3"
+    py.write_text("")
+    assert flow._skip_keychain([_fake_gflow(tmp_path, py)]) == [str(py), "-I", flow.NOKEYCHAIN_SHIM]
+    assert flow._skip_keychain(["/usr/bin/python3", "-m", "gflow_cli"]) == ["/usr/bin/python3", "-I", flow.NOKEYCHAIN_SHIM]
+
+
+def test_keychain_skip_is_macos_only_and_can_be_turned_off(monkeypatch, tmp_path):
+    py = tmp_path / "python3"
+    py.write_text("")
+    exe = _fake_gflow(tmp_path, py)
+    monkeypatch.setattr(flow.sys, "platform", "win32")
+    assert flow._skip_keychain([exe]) == [exe]
+    monkeypatch.setattr(flow.sys, "platform", "darwin")
+    monkeypatch.setenv("GMP_GFLOW_KEYCHAIN", "1")
+    assert flow._skip_keychain([exe]) == [exe]
+
+
+def test_non_python_gflow_runs_unchanged(monkeypatch, tmp_path):
+    monkeypatch.setattr(flow.sys, "platform", "darwin")
+    monkeypatch.delenv("GMP_GFLOW_KEYCHAIN", raising=False)
+    exe = _fake_gflow(tmp_path, "/bin/sh")
+    assert flow._skip_keychain([exe]) == [exe]

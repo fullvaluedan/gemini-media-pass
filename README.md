@@ -153,6 +153,7 @@ Cursor, Windsurf, Codex: add an MCP server of type `command` running
 | `GMP_FLOW_MAX_CREDITS` | 40 | Credit cap per Flow call |
 | `GMP_FLOW_TIMEOUT_SECONDS` | 900 | Per Flow render |
 | `GMP_EDGE_VOICE` | unset | Any edge-tts voice, for example `en-US-AndrewNeural` |
+| `GMP_GFLOW_KEYCHAIN` | unset | macOS: Flow tools skip gflow's "Chrome Safe Storage" Keychain read, which prompts on every call. `1` runs gflow unchanged |
 
 ## Development
 
