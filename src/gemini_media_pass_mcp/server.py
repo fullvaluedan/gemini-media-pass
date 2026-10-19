@@ -163,6 +163,9 @@ async def gemini_text_to_speech(
 from .flow import register_flow_tools
 register_flow_tools(mcp)
 
+from .flow_studio import register_studio_tools
+register_studio_tools(mcp)
+
 from .stitch import register_stitch_tools
 register_stitch_tools(mcp)
 
