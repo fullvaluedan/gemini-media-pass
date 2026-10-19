@@ -6,24 +6,12 @@ Launches browser sign-in to capture the session for your Google AI Pro/Ultra sub
 import sys
 import subprocess
 import json
-import shutil
 import os
 
-def find_gflow() -> str:
-    exe = shutil.which("gflow")
-    if exe:
-        return exe
-    # Common locations on Windows / Linux / macOS
-    candidates = [
-        os.path.expanduser(r"~\AppData\Local\Programs\Python\Python311\Scripts\gflow.exe"),
-        os.path.expanduser(r"~\AppData\Local\Programs\Python\Python312\Scripts\gflow.exe"),
-        os.path.expanduser("~/.local/bin/gflow"),
-        "/usr/local/bin/gflow",
-    ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    return sys.executable + " -m gflow_cli"
+def find_gflow() -> list:
+    # Same lookup as the MCP tools, including the macOS launcher that skips the Keychain prompt
+    from gemini_media_pass_mcp.flow import _find_gflow
+    return _find_gflow()
 
 def main():
     print("=" * 68)
@@ -32,8 +20,7 @@ def main():
     print("\nThis will open Google Chrome to sign into your Google account")
     print("at flow.google.com using your Google AI Pro / Ultra subscription.\n")
 
-    gflow_cmd = find_gflow()
-    base_cmd = [gflow_cmd] if " " not in gflow_cmd else gflow_cmd.split()
+    base_cmd = find_gflow()
 
     try:
         login_cmd = base_cmd + ["auth", "login", "--browser", "chrome"]
