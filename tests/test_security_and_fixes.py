@@ -61,8 +61,10 @@ def test_all_backends_failing_reports_each_error(monkeypatch):
         raise TimeoutError("agy gave no answer")
 
     monkeypatch.setattr(runner, "_agy", boom)
+    monkeypatch.setattr(runner, "find_agy_binary", lambda: "agy")
     out = asyncio.run(runner.execute_query("m", "hi"))
-    assert out.startswith("Error: Gemini did not answer") and "agy: TimeoutError" in out
+    assert out.startswith("Error: Gemini did not answer") and "agy: agy timed out" in out
+    assert "api: GEMINI_API_KEY is not set" in out
 
 
 def test_pcm_becomes_a_real_wav():

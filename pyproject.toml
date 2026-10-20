@@ -45,6 +45,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+qa = ["faster-whisper>=1.0"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -21,6 +21,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 import urllib.error
 import urllib.request
 import wave
@@ -68,7 +69,17 @@ def _bridge(model: str, content: str) -> str:
     return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
 
 
-async def _agy(model: str, content: str, writes: bool) -> str:
+class AgyEmpty(Exception):
+    """agy ran and finished but returned no answer."""
+
+
+PING_SECONDS = int(os.environ.get("GMP_AGY_PING_SECONDS", "20"))
+PING_OK_FOR = 600          # a good ping is trusted for 10 minutes
+_last_ping_ok = 0.0
+
+
+async def _agy(model: str, content: str, writes: bool, timeout: int = TIMEOUT + 15) -> str:
+    """The answer from agy, "" when agy is not installed. Raises TimeoutError or AgyEmpty when agy fails."""
     agy_path = find_agy_binary()
     if not agy_path:
         return ""
@@ -76,19 +87,50 @@ async def _agy(model: str, content: str, writes: bool) -> str:
                                                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     payload = json.dumps({"event": "user", "message": {"content": content}}) + "\n"
     try:
-        out, _ = await asyncio.wait_for(proc.communicate(payload.encode("utf-8")), timeout=TIMEOUT + 15)
+        out, err = await asyncio.wait_for(proc.communicate(payload.encode("utf-8")), timeout=timeout)
     except asyncio.TimeoutError:
         proc.kill()
         await proc.wait()
-        raise TimeoutError(f"agy gave no answer within {TIMEOUT + 15} s")
+        raise TimeoutError(f"agy timed out, no answer within {timeout} s")
     for line in out.decode("utf-8", errors="replace").splitlines():
         try:
             evt = json.loads(line)
         except ValueError:
             continue
         if evt.get("event") == "result":
-            return (evt.get("result", {}).get("response") or "").strip()
+            answer = (evt.get("result", {}).get("response") or "").strip()
+            if answer:
+                return answer
+    why = err.decode("utf-8", errors="replace").strip()[-200:]
+    raise AgyEmpty("agy answered with nothing" + (f" ({why})" if why else "") +
+                   ". Open agy once and check it is signed in and the model is available.")
+
+
+async def ping_agy(model: str = "gemini-3.8-flash-high") -> str:
+    """"" when agy answers a tiny prompt within PING_SECONDS, else why not. Passing pings are cached."""
+    global _last_ping_ok
+    if PING_SECONDS <= 0 or time.monotonic() - _last_ping_ok < PING_OK_FOR:
+        return ""
+    if not find_agy_binary():
+        return "agy is not installed (or set AGY_PATH)"
+    try:
+        await _agy(model, "Reply with the single word OK.", False, timeout=PING_SECONDS)
+    except TimeoutError:
+        return f"agy timed out on a {PING_SECONDS} s ping"
+    except AgyEmpty as e:
+        return f"{e}"
+    except Exception as e:
+        return f"agy failed a ping: {type(e).__name__}: {e}"[:300]
+    _last_ping_ok = time.monotonic()
     return ""
+
+
+async def _agy_checked(model: str, content: str, writes: bool) -> str:
+    """Fail fast: a short ping before a long call, so a dead agy costs 20 s, not minutes."""
+    problem = await ping_agy()
+    if problem:
+        raise AgyEmpty(problem)
+    return await _agy(model, content, writes)
 
 
 def _api(model: str, content: str) -> str:
@@ -116,17 +158,22 @@ async def execute_query(model: str, content: str, writes: bool = False) -> str:
     """Ask Gemini. writes=True only for tools that must create files (image generation)."""
     errors = []
     for name, call in (("bridge", lambda: asyncio.to_thread(_bridge, model, content)),
-                       ("agy", lambda: _agy(model, content, writes)),
+                       ("agy", lambda: _agy_checked(model, content, writes)),
                        ("api", lambda: asyncio.to_thread(_api, model, content))):
         try:
             answer = await call()
             if answer:
                 return answer
         except Exception as e:  # report, then try the next backend
-            errors.append(f"{name}: {type(e).__name__}: {e}"[:300])
-    tried = "\n".join(f"- {e}" for e in errors) or "- no backend is configured"
+            label = "" if isinstance(e, (AgyEmpty, TimeoutError)) else f"{type(e).__name__}: "
+            errors.append(f"{name}: {label}{e}"[:300])
+    if not find_agy_binary():
+        errors.append("agy: not installed (or set AGY_PATH)")
+    if not os.environ.get("GEMINI_API_KEY"):
+        errors.append("api: GEMINI_API_KEY is not set")
+    tried = "\n".join(f"- {e}" for e in errors)
     return ("Error: Gemini did not answer.\n" + tried + "\n\nFix one of: install and sign in to the Antigravity CLI "
-            "(`agy`), set AGY_PATH, or set GEMINI_API_KEY.")
+            "(`agy`), set AGY_PATH, or set GEMINI_API_KEY. Run `flow_doctor` for a full check.")
 
 
 def pcm_to_wav(pcm: bytes, rate: int = 24000) -> bytes:

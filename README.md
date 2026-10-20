@@ -59,7 +59,7 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (24)
+## Tools (27)
 
 ### Understanding
 | Tool | Parameters | What it does |
@@ -77,19 +77,22 @@ Limits depend on your Google plan and change often, so this README does not repe
 |---|---|---|
 | `gemini_text_to_speech` | `text`, `voice`, `output_path`, `style_instruction` | Speech to `.wav` (or `.mp3` with ffmpeg). Voices `Puck`, `Charon`, `Kore`, `Fenrir`, `Aoede`; edge-tts fallback (`GMP_EDGE_VOICE` picks any edge voice) |
 | `gemini_generate_image` | `prompt`, `aspect_ratio`, `image_name` | Image generation through `agy`; returns the saved path only if the file exists |
-| `flow_generate_music` | `prompt`, `duration`, `output_path` | Music through `gflow tools`; reports a failure plainly when nothing was made |
+| `flow_generate_music` | `prompt`, `duration`, `output_path` | Music through gflow, only if your gflow version has a music tool (0.86 has none). Otherwise it tells you to use flowmusic.app |
 
 ### Google Flow (Veo)
 | Tool | Parameters | What it does |
 |---|---|---|
-| `flow_generate_video` | `prompt`, `orientation`, `duration`, `model`, `mode`, `initial_frame`, `end_frame`, `count`, `max_credits` | Text to video or image to video, 9:16 or 16:9. Refuses calls over the credit cap |
+| `flow_generate_video` | `prompt`, `orientation`, `duration`, `model`, `mode`, `initial_frame`, `end_frame`, `count`, `max_credits`, `guardrails`, `spoken_line`, `allow_names` | Text to video or image to video, 9:16 or 16:9. Refuses calls over the credit cap. `guardrails=True` adds "one continuous shot, no cuts, no on-screen text or captions". `spoken_line` pins the exact words and keeps the speaker silent after. Stops before spending when the prompt names a real person or famous character, unless `allow_names=True` |
 | `flow_extend_video` | `media_id`, `prompt`, `project_id`, `orientation` | Extend a clip by about 8 seconds |
 | `flow_list_projects` | `limit` | Your Flow projects |
-| `flow_download_media` | `media_id`, `output_path` | Download a past generation |
-| `flow_sync_catalog` | none | Sync the local media catalog |
+| `flow_download_media` | `media_id`, `output_path` | Download a video gflow made (`output_path` is a folder or a file name). Clips made in the Flow web UI are not in gflow's catalog: download those from flow.google.com |
+| `flow_sync_catalog` | none | Refresh names of media already in gflow's catalog |
 | `flow_get_credits` | `force_refresh` | Live credit balance |
 | `flow_list_models` | none | Video and image models with estimated costs |
 | `flow_auth_status` | none | Session health |
+| `flow_doctor` | none | One report: sign-in, Google account and plan, classic or migrated Flow frontend and what works on it, an `agy` ping, ffmpeg, faster-whisper. Run it first |
+| `flow_clip_qa` | `path`, `kind`, `expected_words`, `cut_threshold` | Checks a downloaded clip: cuts inside it, the words actually spoken vs `expected_words`, lyrics in music (`kind='music'`). Speech checks need `pip install faster-whisper` |
+| `flow_spend_ledger` | `days` | What this server spent on Flow, per request, from `~/.gemini_media_pass/flow_spend.jsonl` |
 
 ### Google Stitch
 | Tool | Parameters | What it does |
@@ -103,10 +106,60 @@ Limits depend on your Google plan and change often, so this README does not repe
 
 Stitch tools ask `agy` to call Stitch, so `agy` needs the Stitch MCP server configured (`agy mcp add ...`).
 
+## Your first 20-second short
+
+A short that works on the first try is several short clips cut together, not one long generation.
+
+1. **Check your setup.** Run `flow_doctor`. Fix anything marked PROBLEM. If it says your account is on the new
+   flow.google.com frontend, only text to video and text to image work from here (see below).
+2. **Split the idea into a setup and a reveal.** Generate them as separate clips. The setup builds the question,
+   the reveal answers it. Plan for the reveal to land on the punch word of the line.
+3. **Generate each clip with guardrails.** For example:
+   `flow_generate_video(prompt="A chef in a white apron tastes soup in a busy kitchen, close-up",
+   guardrails=True, spoken_line="Needs more salt.", duration=6)`.
+   This adds "one continuous shot, no cuts, no on-screen text or captions" and keeps the speaker silent after
+   the line. Describe generic looks. Real people and famous characters get blocked (a Jack Sparrow-like pirate
+   failed 5 of 5 times), while your own Flow avatar in a generic costume passes.
+4. **QA every clip before editing.** `flow_clip_qa(path, expected_words="Needs more salt.")` flags hidden cuts
+   and wrong or extra dialogue. Regenerate the bad ones instead of fixing them in the edit.
+5. **Cut it in 2 to 4 second shots.** Trim each clip to its best 2 to 4 seconds. Use J cuts (the next shot's
+   sound starts before its picture) and L cuts (the sound carries over the next picture) so the cuts feel smooth.
+   Put the reveal cut exactly on the punch word.
+6. **Add music without lyrics.** Make the track at flowmusic.app (gflow cannot make music yet), download it, and
+   run `flow_clip_qa(path, kind="music")`. Flow Music ignored "instrumental only" on 1 of 2 takes, so check.
+   Keep music well under the dialogue.
+7. **Check what you spent.** `flow_spend_ledger` lists every request and its cost, because the Flow balance often
+   cannot be read from here.
+
+### Migrated accounts: avatars and ingredients
+
+Google is moving accounts from labs.google to a new Flow frontend at flow.google.com. On a migrated account,
+gflow (and this server) can only do text to video and text to image. The Flow web UI is the only path for
+avatars, ingredients, character references, image to image and image to video with a start frame. Make those
+clips in the web UI, download them from there, and use `flow_clip_qa` on them like any other clip.
+
+## Troubleshooting
+
+| Message | What it means | What to do |
+|---|---|---|
+| `Your Google account was moved to Flow's new frontend` | The account is on flow.google.com and gflow cannot drive that request there (gflow `FlowHostMigratedError`). Nothing was spent | Use text to video or text to image here. Do image to image, image to video, avatars and ingredients in the Flow web UI. Retrying does not help |
+| `Not sent, nothing spent. The prompt names ...` | The prompt names a real person or famous character, which Flow blocks | Describe a generic look, or pass `allow_names=True` to send it anyway |
+| `Flow blocked this prompt to protect third-party content` | Flow refused the render ("interests of third-party content providers") and refunded it | Remove the name or look-alike wording |
+| `Media ... was not downloaded. gflow only downloads media it made itself` | The clip was made in the Flow web UI, so gflow has no record of it | Download it from flow.google.com |
+| `Music was not generated ... no music generator` | gflow 0.86 has no music tool | Make the track at flowmusic.app, then run `flow_clip_qa` with `kind='music'` |
+| `agy answered with nothing` | `agy` ran but returned no text | Open `agy` once, check you are signed in and the model is available. Or set `GEMINI_API_KEY` |
+| `agy timed out on a 20 s ping` | `agy` hangs. The server checks before long calls so you wait 20 seconds, not minutes | Same as above. `GMP_AGY_PING_SECONDS` changes the wait, `0` turns the ping off |
+| `api: GEMINI_API_KEY is not set` | There is no API fallback | Optional: add a free key from Google AI Studio |
+| `Balance unreadable (gflow issue #795)` | Signed in and generation works, but gflow cannot read credits on this account | Check the balance in Flow. `flow_spend_ledger` shows what this server spent |
+| `Refused: this would spend N credits, over the cap` | The call costs more than `GMP_FLOW_MAX_CREDITS` | Pass `max_credits=N` or raise the setting |
+| `Cuts: N inside the clip` (clip QA) | Veo cut to another angle inside one generation | Trim to one shot, or regenerate with `guardrails=True` |
+| `Lyrics: heard words` (clip QA) | The track has singing | Use another take |
+
 ## Setup
 
 1. Install the [Antigravity CLI](https://antigravity.google) and sign in, or create a Gemini API key.
 2. For Flow: `pip install gflow-cli`, then `gflow auth login` (or `gemini-media-pass-login`).
+   For clip QA: install ffmpeg, and optionally `pip install faster-whisper` for the speech checks.
 3. Add the server to your client.
 
 Claude Code:
@@ -153,6 +206,9 @@ Cursor, Windsurf, Codex: add an MCP server of type `command` running
 | `GMP_FLOW_MAX_CREDITS` | 40 | Credit cap per Flow call |
 | `GMP_FLOW_TIMEOUT_SECONDS` | 900 | Per Flow render |
 | `GMP_EDGE_VOICE` | unset | Any edge-tts voice, for example `en-US-AndrewNeural` |
+| `GMP_AGY_PING_SECONDS` | 20 | Quick `agy` check before long calls. `0` turns it off |
+| `GMP_FLOW_LEDGER` | `~/.gemini_media_pass/flow_spend.jsonl` | Where Flow spend is logged |
+| `GMP_WHISPER_MODEL` | `base` | faster-whisper model for clip QA |
 
 ## Development
 

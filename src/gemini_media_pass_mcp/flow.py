@@ -16,6 +16,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
+from . import ledger
+from .guardrails import apply_guardrails, explain_flow_error, third_party_names, third_party_warning
+
 DEFAULT_OUTPUT_DIR = str(Path.home() / "Videos" / "Flow")
 TRACKER_FILE = Path.home() / ".flow_credits_tracker.json"
 
@@ -264,8 +267,18 @@ def register_flow_tools(mcp):
         output_dir: Optional[str] = None,
         output_filename: Optional[str] = None,
         count: int = 1,
-        max_credits: Optional[int] = None
+        max_credits: Optional[int] = None,
+        guardrails: bool = False,
+        spoken_line: Optional[str] = None,
+        allow_names: bool = False
     ) -> str:
+        if not allow_names:
+            names = third_party_names(prompt)
+            if names:
+                return third_party_warning(names)
+        if guardrails or spoken_line:
+            prompt = apply_guardrails(prompt, spoken_line)
+
         norm_orient = orientation.lower().strip()
         if norm_orient in ["vertical", "portrait", "9:16", "short", "shorts", "tiktok", "reel"]:
             aspect = "9:16"
@@ -345,11 +358,16 @@ def register_flow_tools(mcp):
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
         if rc != 0:
+            plain = explain_flow_error(out_text + "\n" + err_text)
+            status = "blocked" if plain and "third-party" in plain else "failed"
+            ledger.log_request("flow_generate_video", chosen_model, prompt, total_cost, status,
+                               note=(plain or err_text or out_text)[:120])
             return (
-                f"### ❌ Google Flow Video Generation Failed\n\n"
-                f"**Error Details:**\n```\n{err_text or out_text}\n```\n\n"
-                f"*(Zero credits deducted — run aborted before submission.)*\n"
+                "### Google Flow video generation failed\n\n"
+                + (f"{plain}\n\n" if plain else "")
+                + f"**gflow said:**\n```\n{(err_text or out_text)[-1500:]}\n```\n"
             )
+        ledger.log_request("flow_generate_video", chosen_model, prompt, total_cost, "ok", out_text)
 
         spend_info = await CreditTracker.record_real_spend(total_cost)
         curr_credits = spend_info.get("current", 0)
@@ -456,7 +474,10 @@ def register_flow_tools(mcp):
         err_text = stderr.decode("utf-8", errors="replace").strip()
 
         if rc != 0:
-            return f"### ❌ Extend Video Failed\n\n```\n{err_text or out_text}\n```"
+            plain = explain_flow_error(out_text + "\n" + err_text)
+            ledger.log_request("flow_extend_video", "extend", prompt, 20, "failed", note=(plain or "")[:120])
+            return f"### Extend video failed\n\n{plain or ''}\n\n```\n{(err_text or out_text)[-1500:]}\n```"
+        ledger.log_request("flow_extend_video", "extend", prompt, 20, "ok", out_text)
 
         spend_info = await CreditTracker.record_real_spend(20)
         curr_credits = spend_info.get("current", 0)
@@ -559,33 +580,28 @@ def register_flow_tools(mcp):
 
     @mcp.tool(
         name="flow_download_media",
-        description="Fetch an already-generated video or music asset from Google Flow by its media ID directly into your local workspace."
+        description=("Download a video gflow generated, by its media ID. output_path is a folder, or a file path to "
+                     "save under that name. Only media in gflow's local catalog works (clips made through this server "
+                     "or gflow). Clips made in the Flow web UI must be downloaded from flow.google.com.")
     )
     async def flow_download_media(media_id: str, output_path: Optional[str] = None) -> str:
-        cmd = _find_gflow() + ["data", "download", media_id, "--json"]
-        if output_path:
-            clean_out = os.path.abspath(output_path).replace("\\", "/")
-            cmd.extend(["-o", clean_out])
-
-        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
+        cmd, target = download_command(media_id, output_path)
+        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
-
-        if rc != 0:
-            return f"### ❌ Failed to download media `{media_id}`:\n```\n{err_text or out_text}\n```"
-
-        return (
-            f"### 📥 Media Downloaded Successfully!\n\n"
-            f"- **Media ID:** `{media_id}`\n"
-            f"- **Details:**\n```\n{out_text}\n```"
-        )
+        if rc != 0 or '"status": "fail"' in out_text:
+            plain = explain_flow_error(out_text + "\n" + err_text)
+            return (f"Media `{media_id}` was not downloaded.\n\n{plain or ''}\n\n"
+                    f"```\n{(err_text or out_text)[-1200:]}\n```")
+        saved = saved_file(out_text, target)
+        return f"Downloaded `{media_id}`" + (f" to `{saved}`" if saved else f"\n```\n{out_text[-1200:]}\n```")
 
     @mcp.tool(
         name="flow_sync_catalog",
-        description="Reconcile and sync your local media catalog with your remote Google Flow project history."
+        description="Refresh names and presence of media already in gflow's local catalog from your Flow projects. It does not import clips made in the Flow web UI."
     )
     async def flow_sync_catalog() -> str:
-        cmd = _find_gflow() + ["data", "sync", "--json"]
+        cmd = _find_gflow() + ["data", "sync", "--names", "--json"]
         rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT if 'video' in cmd or 'tools' in cmd else 120)
         out_text = stdout.decode("utf-8", errors="replace").strip()
         err_text = stderr.decode("utf-8", errors="replace").strip()
@@ -597,7 +613,9 @@ def register_flow_tools(mcp):
 
     @mcp.tool(
         name="flow_generate_music",
-        description="Generate background music, instrumentals, or ambient soundscapes using Google Flow Music / MusicFX. Supports genre, mood, tempo, and duration."
+        description=("Generate music through gflow, when your gflow version has a music tool. gflow 0.86 has none, so "
+                     "this usually says where to make the track instead (flowmusic.app). Check any track for lyrics "
+                     "with flow_clip_qa kind='music'.")
     )
     async def flow_generate_music(
         prompt: str,
@@ -606,11 +624,50 @@ def register_flow_tools(mcp):
     ) -> str:
         clean_path = os.path.abspath(output_path).replace("\\", "/")
         os.makedirs(os.path.dirname(clean_path) or ".", exist_ok=True)
+        rc, stdout, stderr = await _run(music_command(prompt, duration), timeout=GEN_TIMEOUT)
+        out_text = stdout.decode("utf-8", errors="replace").strip()
+        err_text = stderr.decode("utf-8", errors="replace").strip()
+        if rc == 0 and '"status": "fail"' not in out_text:
+            saved = saved_file(out_text, clean_path)
+            if saved:
+                return f"Music saved: `{saved}` (prompt: {prompt}). Run flow_clip_qa kind='music' to check for lyrics."
+        plain = explain_flow_error(out_text + "\n" + err_text)
+        return (f"Music was not generated. Nothing was saved.\n\n{plain or ''}\n\n"
+                f"```\n{(err_text or out_text)[-800:]}\n```")
 
-        # gflow exposes music as a prompt tool; report exactly what happened, never a fake success
-        cmd = _find_gflow() + ["tools", "run", "music", prompt, "--duration", str(duration), "-o", clean_path, "--json"]
-        rc, stdout, stderr = await _run(cmd, timeout=GEN_TIMEOUT)
-        if rc == 0 and os.path.isfile(clean_path):
-            return f"Music saved: `{clean_path}` ({duration} s, prompt: {prompt})"
-        why = (stderr or stdout).decode("utf-8", errors="replace").strip()[:800]
-        return f"Music was not generated (gflow exit {rc}). Nothing was saved.\n```\n{why}\n```"
+    from .doctor import register_doctor_tools
+    register_doctor_tools(mcp)
+
+
+def music_command(prompt: str, duration: int) -> List[str]:
+    """`gflow tools run NAME TEXT [--style] [--json]` takes no duration or output flags, so the length goes in the text."""
+    return _find_gflow() + ["tools", "run", "music", f"{prompt}. About {duration} seconds long.", "--json"]
+
+
+def download_command(media_id: str, output_path: Optional[str]) -> tuple:
+    """`gflow data download MEDIA_ID --out DIRECTORY`. A file path means its folder, renamed after download."""
+    cmd = _find_gflow() + ["data", "download", media_id, "--json"]
+    target = None
+    if output_path:
+        clean = os.path.abspath(output_path).replace("\\", "/")
+        folder = clean
+        if os.path.splitext(clean)[1]:
+            target, folder = clean, os.path.dirname(clean)
+        os.makedirs(folder, exist_ok=True)
+        cmd += ["--out", folder]
+    return cmd, target
+
+
+MEDIA_PATH = re.compile(r'([A-Za-z]:(?:\\\\|\\|/)[^"\r\n]+?\.(?:mp4|mp3|wav|m4a)|/[^"\r\n ]+?\.(?:mp4|mp3|wav|m4a))')
+
+
+def saved_file(out_text: str, target: Optional[str]) -> Optional[str]:
+    """The file gflow saved (first media path in its output that exists), moved to `target` when one was asked for."""
+    for raw in MEDIA_PATH.findall(out_text):
+        path = raw.replace("\\\\", "/").replace("\\", "/")
+        if os.path.isfile(path):
+            if target and os.path.abspath(path) != os.path.abspath(target):
+                shutil.move(path, target)
+                return target
+            return path
+    return None
