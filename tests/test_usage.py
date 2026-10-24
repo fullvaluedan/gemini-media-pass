@@ -10,6 +10,7 @@ from test_first_try import FakeMCP
 def no_local_ledger(monkeypatch, tmp_path):
     monkeypatch.setenv("GMP_FLOW_LEDGER", str(tmp_path / "missing.jsonl"))
     monkeypatch.delenv("GMP_FLOW_DAILY_BUDGET", raising=False)
+    monkeypatch.delenv("GMP_FLOW_ACCOUNT", raising=False)
 
 
 @pytest.mark.parametrize("balance", [0, 50])
@@ -42,6 +43,15 @@ def test_expected_account_matches_case_insensitively(monkeypatch):
     async def fetch(profile):
         return {"authenticated": True, "credits": 50, "email": "Me@example.com"}
     monkeypatch.setattr(flow, "_fetch_credits_raw", fetch)
+    assert "Flow balance: 50 cr" in asyncio.run(usage.usage_report(account_email="me@example.com"))
+
+
+def test_configured_account_and_explicit_override(monkeypatch):
+    async def fetch(profile):
+        return {"authenticated": True, "credits": 50, "email": "me@example.com"}
+    monkeypatch.setattr(flow, "_fetch_credits_raw", fetch)
+    monkeypatch.setenv("GMP_FLOW_ACCOUNT", "other@example.com")
+    assert "Account mismatch" in asyncio.run(usage.usage_report())
     assert "Flow balance: 50 cr" in asyncio.run(usage.usage_report(account_email="me@example.com"))
 
 

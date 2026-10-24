@@ -5,6 +5,12 @@ description: Check actual Flow credits remaining and Google One credit activity 
 
 Use live account data, not just the local ledger. With browser control available:
 
+Honor the user's chosen account or configured `GMP_FLOW_ACCOUNT` (which may be in
+`~/.gemini_media_pass.env`). Read only that setting, without exposing other config
+values. When an expected account is set, prefer `gemini_usage` / the CLI with its
+account check for the balance. Only use browser activity from the same account;
+do not substitute whichever account happens to be open.
+
 1. Open or reuse https://flow.google.com in the user's signed-in browser. Read
    Account details and confirm the selected account. If multiple accounts make
    selection ambiguous, ask which one. Read the displayed Flow credit balance

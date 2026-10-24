@@ -278,6 +278,11 @@ account without separate evidence. gflow's migrated-host balance support is docu
 older releases can fail despite a valid session. Compare reported balances to the
 account menu rather than assuming a successful JSON response proves correctness.
 
+Set `GMP_FLOW_ACCOUNT` in the environment or `~/.gemini_media_pass.env` to remember
+your expected account. `--account` / `account_email` overrides this default.
+This selects an account check, not a login: choose a matching gflow profile or
+browser account before reporting usage. Keep personal email settings out of Git.
+
 ### Local receipts and batch policy
 
 Keep `include_credit_receipt=False` during a batch and request `gemini_usage()`

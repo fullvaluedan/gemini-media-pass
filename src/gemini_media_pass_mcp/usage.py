@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import os
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -13,6 +14,7 @@ async def usage_report(daily_budget: Optional[int] = None, profile: str = "defau
     # Fetch directly: a same-day tracker value is not a live provider balance.
     from .flow import _fetch_credits_raw
 
+    account_email = account_email or os.environ.get("GMP_FLOW_ACCOUNT") or None
     local = credit_receipt(daily_budget=daily_budget)
     checked = datetime.now(timezone.utc).isoformat(timespec="seconds")
     try:
