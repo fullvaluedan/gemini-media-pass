@@ -1,7 +1,7 @@
 import os
 import re
 import asyncio
-from typing import Optional
+from typing import Literal, Optional
 
 try:
     from mcp.server.mcpserver import MCPServer
@@ -10,7 +10,10 @@ except ImportError:
     from mcp.server.fastmcp import FastMCP
     mcp = FastMCP("gemini-media-pass")
 
-from .runner import execute_query, execute_tts
+from .runner import execute_query, execute_tts, execute_media_query
+from .guide import register_guide_tools
+
+register_guide_tools(mcp)
 
 @mcp.tool(
     name="ask_gemini_pro",
@@ -46,9 +49,11 @@ async def gemini_vision(image_path: str, question: str = "Analyze this image in 
 
 @mcp.tool(
     name="gemini_audio",
-    description="Listen to and analyze an audio file (MP3, WAV, M4A, AAC, FLAC, voice recordings, podcasts, speech, sound effects) using Google Gemini's native audio understanding. Transcribe spoken words, analyze vocal tone/pacing, identify background sounds, or critique audio quality. Provide the absolute local file path."
+    description="Transcribe or analyze audio using Flash through agy by default. Pro is explicit; paid API/bridge disabled unless allow_paid_api=True. Transcribe spoken words, analyze vocal tone/pacing, identify background sounds, or critique audio quality. Provide the absolute local file path."
 )
-async def gemini_audio(audio_path: str, question: str = "Transcribe and analyze this audio in detail, noting speech, tone, and sound events.") -> str:
+async def gemini_audio(audio_path: str, question: str = "Transcribe and analyze this audio in detail, noting speech, tone, and sound events.",
+    model_tier: Literal["flash", "pro"] = "flash", allow_paid_api: bool = False
+) -> str:
     """Listen to and analyze an audio file using Gemini Multimodal Audio."""
     norm_path = os.path.abspath(audio_path).replace("\\", "/")
     if not os.path.exists(norm_path):
@@ -58,13 +63,15 @@ async def gemini_audio(audio_path: str, question: str = "Transcribe and analyze 
         f"Please inspect and listen to the audio file at `{norm_path}` using view_file.\n"
         f"User question / instruction: {question}"
     )
-    return await execute_query("gemini-3.1-pro-high", instruction)
+    return await execute_media_query(instruction, model_tier=model_tier, allow_paid_api=allow_paid_api)
 
 @mcp.tool(
     name="gemini_video",
-    description="Watch and analyze a video file (MP4, MOV, MKV, WebM, AVI, short-form shorts/reels, screencasts, animation clips) using Google Gemini's native video understanding. Analyze visual scene transitions, cut pacing, B-roll timing, on-screen text, presenter body language, and temporal story flow. Provide the absolute local file path."
+    description="Use model_tier=flash for video search/indexing, timestamps, B-roll and transcription. Use pro only for explicitly requested deep artistic/subtext/directorial critique. agy first; paid API/bridge disabled unless allow_paid_api=True. Watch and analyze a local video file. Analyze visual scene transitions, cut pacing, B-roll timing, on-screen text, presenter body language, and temporal story flow. Provide the absolute local file path."
 )
-async def gemini_video(video_path: str, question: str = "Watch and analyze this video in detail, describing the visual flow, pacing, and key scenes.") -> str:
+async def gemini_video(video_path: str, question: str = "Watch and analyze this video in detail, describing the visual flow, pacing, and key scenes.",
+    model_tier: Literal["flash", "pro"] = "flash", allow_paid_api: bool = False
+) -> str:
     """Watch and analyze a video file using Gemini Multimodal Video."""
     norm_path = os.path.abspath(video_path).replace("\\", "/")
     if not os.path.exists(norm_path):
@@ -74,7 +81,7 @@ async def gemini_video(video_path: str, question: str = "Watch and analyze this 
         f"Please inspect and watch the video file at `{norm_path}` using view_file.\n"
         f"User question / instruction: {question}"
     )
-    return await execute_query("gemini-3.1-pro-high", instruction)
+    return await execute_media_query(instruction, model_tier=model_tier, allow_paid_api=allow_paid_api)
 
 @mcp.tool(
     name="gemini_read_document",
@@ -94,10 +101,12 @@ async def gemini_read_document(file_path: str, question: str = "Summarize the ke
 
 @mcp.tool(
     name="gemini_multimodal_inspect",
-    description="Universal multimodal inspector for ANY media file: image, audio, video, PDF, or code. Automatically routes to Gemini Pro's native multimodal engine. Provide the absolute local file path."
+    description="Universal multimodal inspector for ANY media file: image, audio, video, PDF, or code. Defaults to Flash through agy; Pro and paid fallback require explicit selection. Provide the absolute local file path."
 )
-async def gemini_multimodal_inspect(file_path: str, question: str = "Analyze this file in detail and answer any questions.") -> str:
-    """Inspect any media file (image, audio, video, document) using Gemini Multimodal Pro."""
+async def gemini_multimodal_inspect(file_path: str, question: str = "Analyze this file in detail and answer any questions.",
+    model_tier: Literal["flash", "pro"] = "flash", allow_paid_api: bool = False
+) -> str:
+    """Inspect any media file (image, audio, video, document) using the explicitly selected Gemini tier (Flash by default)."""
     norm_path = os.path.abspath(file_path).replace("\\", "/")
     if not os.path.exists(norm_path):
         return f"Error: File not found at '{norm_path}'"
@@ -106,7 +115,7 @@ async def gemini_multimodal_inspect(file_path: str, question: str = "Analyze thi
         f"Please inspect the media file at `{norm_path}` using view_file.\n"
         f"User question / instruction: {question}"
     )
-    return await execute_query("gemini-3.1-pro-high", instruction)
+    return await execute_media_query(instruction, model_tier=model_tier, allow_paid_api=allow_paid_api)
 
 @mcp.tool(
     name="gemini_generate_image",

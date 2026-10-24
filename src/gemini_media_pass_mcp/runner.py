@@ -1,12 +1,12 @@
 """How every Gemini call is made.
 
 Order of backends, first one that answers wins:
-1. A local OpenAI-compatible bridge, ONLY when BRIDGE_URL is set. Off by default: whatever listens on that
-   port receives every prompt and file path.
-2. The Google Antigravity CLI (`agy`), sandboxed. Read-only tools run in plan mode. The CLI never gets
+1. The Google Antigravity CLI (`agy`), sandboxed. Read-only tools run in plan mode. The CLI never gets
    --dangerously-skip-permissions unless the user opts in with GMP_AGY_UNSAFE=1, because text inside an
    analyzed file could otherwise make the agent run commands on this machine.
+2. A local OpenAI-compatible bridge, ONLY when BRIDGE_URL is set.
 3. The Gemini API with GEMINI_API_KEY, sent in the x-goog-api-key header (never in the URL).
+Video/audio tools disable steps 2 and 3 unless allow_paid_api=True was explicitly passed.
 
 Every backend has a timeout, and every failure is reported back instead of being swallowed.
 """
@@ -30,7 +30,9 @@ from .config import find_agy_binary, get_bridge_url
 
 API = "https://generativelanguage.googleapis.com/v1beta/models"
 API_FLASH = os.environ.get("GEMINI_API_MODEL_FLASH", "gemini-3.5-flash")
-API_PRO = os.environ.get("GEMINI_API_MODEL_PRO", API_FLASH)
+API_PRO = os.environ.get("GEMINI_API_MODEL_PRO", "")
+AGY_FLASH = os.environ.get("GMP_AGY_MODEL_FLASH", "gemini-3.8-flash-high")
+AGY_PRO = os.environ.get("GMP_AGY_MODEL_PRO", "gemini-3.1-pro-high")
 TTS_MODEL = os.environ.get("GEMINI_TTS_MODEL", "gemini-3.8-flash-tts")
 TIMEOUT = int(os.environ.get("GMP_TIMEOUT_SECONDS", "180"))
 INLINE_LIMIT = 20 * 1024 * 1024
@@ -149,17 +151,22 @@ def _api(model: str, content: str) -> str:
     if notes and not parts:
         raise ValueError("; ".join(notes))
     api_model = API_PRO if "pro" in model else API_FLASH
+    if not api_model:
+        raise ValueError("Set GEMINI_API_MODEL_PRO to an available Pro model; refusing silent Flash substitution")
     res = _post(f"{API}/{api_model}:generateContent", {"contents": [{"parts": parts + [{"text": content}]}]}, api_key)
     out = res.get("candidates", [{}])[0].get("content", {}).get("parts", [])
     return "\n".join(p.get("text", "") for p in out).strip()
 
 
-async def execute_query(model: str, content: str, writes: bool = False) -> str:
+async def execute_query(model: str, content: str, writes: bool = False, *,
+                        allow_paid_fallback: bool = True, api_model_tier: str | None = None) -> str:
     """Ask Gemini. writes=True only for tools that must create files (image generation)."""
     errors = []
-    for name, call in (("bridge", lambda: asyncio.to_thread(_bridge, model, content)),
-                       ("agy", lambda: _agy_checked(model, content, writes)),
-                       ("api", lambda: asyncio.to_thread(_api, model, content))):
+    backends = [("agy", lambda: _agy_checked(model, content, writes))]
+    if allow_paid_fallback:
+        backends.extend([("bridge", lambda: asyncio.to_thread(_bridge, model, content)),
+                         ("api", lambda: asyncio.to_thread(_api, api_model_tier or model, content))])
+    for name, call in backends:
         try:
             answer = await call()
             if answer:
@@ -169,11 +176,24 @@ async def execute_query(model: str, content: str, writes: bool = False) -> str:
             errors.append(f"{name}: {label}{e}"[:300])
     if not find_agy_binary():
         errors.append("agy: not installed (or set AGY_PATH)")
+    if not allow_paid_fallback:
+        return ("Error: subscription analysis did not complete.\n" +
+                "\n".join(f"- {e}" for e in errors) +
+                "\nPaid API and bridge fallback are disabled. Fix agy/sign-in or, only with user "
+                "authorization, retry with allow_paid_api=True. No paid fallback was attempted.")
     if not os.environ.get("GEMINI_API_KEY"):
         errors.append("api: GEMINI_API_KEY is not set")
     tried = "\n".join(f"- {e}" for e in errors)
     return ("Error: Gemini did not answer.\n" + tried + "\n\nFix one of: install and sign in to the Antigravity CLI "
             "(`agy`), set AGY_PATH, or set GEMINI_API_KEY. Run `flow_doctor` for a full check.")
+
+
+async def execute_media_query(content: str, model_tier: str = "flash", allow_paid_api: bool = False) -> str:
+    """Flash by default; explicit Pro and external fallback are independent choices."""
+    if model_tier not in {"flash", "pro"}:
+        return "Error: model_tier must be 'flash' or 'pro'."
+    model = AGY_PRO if model_tier == "pro" else AGY_FLASH
+    return await execute_query(model, content, allow_paid_fallback=allow_paid_api, api_model_tier=model_tier)
 
 
 def pcm_to_wav(pcm: bytes, rate: int = 24000) -> bytes:

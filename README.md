@@ -16,14 +16,14 @@ file to Gemini and returns a short text report instead.
 
 ## How it connects to Gemini
 
-Each call tries these in order and reports every failure it hit:
+Calls prefer the Antigravity subscription route. Video/audio and generic multimodal analysis stop there unless `allow_paid_api=True` explicitly permits external fallback. Other query tools try the configured fallbacks and report failures:
 
 1. **Antigravity CLI (`agy`)**, on your Google AI subscription. Runs **sandboxed**. Analysis tools run in
    **read-only plan mode**. Only the tools that must create something (image generation, Stitch create and
    generate) may write.
-2. **Gemini API** with `GEMINI_API_KEY` (free key from [Google AI Studio](https://aistudio.google.com)). The key
+2. **A local OpenAI-compatible bridge**, only if you set `BRIDGE_URL`. Off by default.
+3. **Gemini API** with `GEMINI_API_KEY` (key from [Google AI Studio](https://aistudio.google.com)). The key
    is sent in the `x-goog-api-key` header, never in the URL. Files up to 20 MB are attached inline.
-3. **A local OpenAI-compatible bridge**, only if you set `BRIDGE_URL`. Off by default.
 
 Google Flow (Veo video, extend, credits, projects) uses [`gflow-cli`](https://github.com/ffroliva/gflow-cli) and a
 one-time browser sign-in (`gflow auth login`). Its session is stored on your machine in `~/.gflow`.
@@ -59,14 +59,44 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (29)
+## Operating rules
+
+For help, settings or tool options, call
+`gemini_media_pass_guide(topic="all")` (or `models`, `billing`, `settings`,
+`workflows`). This guide is local and makes no provider call.
+
+- Video search/indexing, scenes, timestamps, B-roll, character actions and
+  transcription: **always `gemini_video(..., model_tier="flash")`** (the default).
+- Select `model_tier="pro"` only for explicitly requested deep artistic critique,
+  nuanced subtext or subtle directorial/thematic comparisons. No auto-escalation.
+- Video/audio analysis tries sandboxed `agy` under your Google AI subscription
+  first. `allow_paid_api=False` blocks both the paid API and configured bridge,
+  even if a key/URL exists. If agy fails, it stops and explains why. Only pass
+  `allow_paid_api=True` when the user instructs you to permit external fallback.
+- For Veo generation use `flow_*` tools; check `flow_doctor` or
+  `flow_get_credits` first. Request one `gemini_usage` report after a batch.
+
+See [copyable client instructions](docs/operating-rules.md). Subscription limits
+still apply. Context capacity and cloud cost depend on the actual selected model,
+backend, media resolution and tokens; this server does not guarantee 97% savings,
+less than $0.01 for every 5-minute clip, or full context access through every
+subscription client. See [Google video documentation](https://ai.google.dev/gemini-api/docs/video-understanding)
+and [API pricing](https://ai.google.dev/gemini-api/docs/pricing).
+
+## Tools (30)
+
+### Guide
+
+| Tool | Parameters | What it does |
+|---|---|---|
+| `gemini_media_pass_guide` | `topic` | Local guide: all, models, billing, settings, workflows |
 
 ### Understanding
 | Tool | Parameters | What it does |
 |---|---|---|
-| `gemini_video` | `video_path`, `question` | Watch and analyze a video file |
+| `gemini_video` | `video_path`, `question`, `model_tier`, `allow_paid_api` | Flash by default for search/indexing; explicit Pro critique; agy-only unless external fallback is permitted |
 | `gemini_vision` | `image_path`, `question` | Inspect an image or screenshot |
-| `gemini_audio` | `audio_path`, `question` | Transcribe and analyze audio |
+| `gemini_audio` | `audio_path`, `question`, `model_tier`, `allow_paid_api` | Flash transcription/analysis; agy-only by default |
 | `gemini_read_document` | `file_path`, `question` | Read a large document, log or codebase file |
 | `gemini_multimodal_inspect` | `file_path`, `question` | Any file type |
 | `ask_gemini_pro` | `prompt` | Deep reasoning or a second opinion |
@@ -326,3 +356,20 @@ published for a different product such as Gemini Apps or Google Search.
 Live balance queries are read-only and do not generate media. They can make a
 network request or open gflow's browser; the agent browser workflow reads account
 pages. Report text and skill invocation still add context tokens to the AI client.
+
+
+### Media routing settings
+
+`GMP_AGY_MODEL_FLASH` and `GMP_AGY_MODEL_PRO` configure the subscription model
+aliases (defaults: `gemini-3.8-flash-high`, `gemini-3.1-pro-high`).
+`GEMINI_API_MODEL_FLASH` selects the paid fallback Flash model;
+`GEMINI_API_MODEL_PRO` must be set explicitly before an authorized Pro API call.
+Pro requests never silently fall back to the Flash API model. Setting a key or
+bridge URL does not authorize external fallback for media tools.
+
+The generic `gemini_multimodal_inspect` has the same Flash default and fallback
+block so it cannot bypass this policy for video/audio. Dedicated text/reasoning
+and image-generation tools retain their existing fallback permission; TTS retains
+its Gemini API/edge-tts behavior. This policy covers **analysis**, not all toolset
+operations. Explicitly selecting Pro expresses caller intent; the server does not
+attempt to infer artistic intent by keyword-matching the user's prompt.
