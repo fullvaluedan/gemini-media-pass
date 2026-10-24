@@ -81,6 +81,21 @@ def append_credit_footer(result_text: str, cost_this_call: Optional[int] = None,
 
 
 def register_receipt_tools(mcp):
+    @mcp.tool(name="gemini_usage", description=(
+        "Query the current Flow balance via gflow and show separately labeled local 24h/30d spend. "
+        "Call once after a batch or on demand. If live balance or provider activity is unavailable, "
+        "use the signed-in browser: flow.google.com Account details, then credits → Google One activity. "
+        "A missing local ledger does not mean no account activity."))
+    async def gemini_usage(daily_budget: Optional[int] = None, profile: str = "default",
+                           account_email: Optional[str] = None) -> str:
+        from .usage import usage_report
+        try:
+            raw_budget = os.environ.get("GMP_FLOW_DAILY_BUDGET")
+            budget = daily_budget if daily_budget is not None else (int(raw_budget) if raw_budget else None)
+            return await usage_report(daily_budget=budget, profile=profile, account_email=account_email)
+        except ValueError:
+            return "Error: daily budget must be a positive integer."
+
     @mcp.tool(name="flow_credit_receipt", description=(
         "Compact local Flow spend for rolling 24h/30d windows; no network calls. "
         "Optional daily_budget is your own target, not a provider allowance. "
@@ -95,18 +110,29 @@ def register_receipt_tools(mcp):
 
 
 def main():
-    """Read-only gemini-usage command; no server or provider connection required."""
+    """Read-only live balance query with a clearly labeled local-only option."""
     import argparse
+    import asyncio
 
-    parser = argparse.ArgumentParser(description="Show local Flow usage (24h/30d), without provider calls.")
+    parser = argparse.ArgumentParser(description="Query live Flow balance and show partial local spend history.")
     parser.add_argument("--daily-budget", type=int, help="Personal rolling-24h credit budget, not account balance")
+    parser.add_argument("--profile", default="default", help="gflow account profile")
+    parser.add_argument("--account", help="Expected account email; withhold balance on mismatch")
+    parser.add_argument("--local-only", action="store_true", help="Only read local history; no provider query")
     args = parser.parse_args()
     try:
         raw_budget = os.environ.get("GMP_FLOW_DAILY_BUDGET")
         budget = args.daily_budget if args.daily_budget is not None else (int(raw_budget) if raw_budget else None)
-        print(credit_receipt(daily_budget=budget))
+        if budget is not None and budget <= 0:
+            raise ValueError("invalid budget")
     except ValueError:
         parser.error("daily budget must be a positive integer")
+    if args.local_only:
+        result = credit_receipt(daily_budget=budget)
+    else:
+        from .usage import usage_report
+        result = asyncio.run(usage_report(daily_budget=budget, profile=args.profile, account_email=args.account))
+    print(result)
 
 
 if __name__ == "__main__":

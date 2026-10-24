@@ -64,6 +64,7 @@ def _find_gflow() -> List[str]:
     if exe:
         return [exe]
     candidates = [
+        os.path.expanduser("~/.local/bin/gflow.exe"),
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python311\Scripts\gflow.exe"),
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python312\Scripts\gflow.exe"),
         os.path.expanduser("~/.local/bin/gflow"),

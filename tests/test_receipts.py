@@ -61,7 +61,7 @@ def test_missing_and_unreadable_history(history):
 
 
 def test_usage_cli(history, monkeypatch, capsys):
-    monkeypatch.setattr("sys.argv", ["gemini-usage", "--daily-budget", "50"])
+    monkeypatch.setattr("sys.argv", ["gemini-usage", "--local-only", "--daily-budget", "50"])
     receipts.main()
     assert "40/50 cr" in capsys.readouterr().out
     monkeypatch.setattr("sys.argv", ["gemini-usage", "--daily-budget", "0"])

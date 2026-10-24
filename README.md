@@ -59,7 +59,7 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (28)
+## Tools (29)
 
 ### Understanding
 | Tool | Parameters | What it does |
@@ -232,73 +232,69 @@ Tests never touch the network, `agy` or `gflow`.
 MIT. See [LICENSE](LICENSE).
 
 
-## Usage after a batch (recommended)
+## Live usage after a batch
 
-Call `flow_credit_receipt()` for a compact local spend summary without fetching a
-provider balance. `flow_credit_receipt(daily_budget=50)` also shows the remainder
-of **your own rolling-24h budget**, not Google's allowance or reset schedule.
-Use `flow_get_credits(force_refresh=True)` when you need a provider balance
-(which may be unavailable on migrated accounts).
+Use `/gemini-usage` in Claude Code or the bundled `gemini-usage` skill in Codex
+(`$gemini-usage` / `/skills`). The workflow checks the signed-in account:
 
-To attach a receipt to a successful `flow_generate_video` or `flow_extend_video`
-call, pass `include_credit_receipt=True`. Set `GMP_CREDIT_RECEIPTS=on` to opt in
-by default; `include_credit_receipt=False` overrides it for one call. The default
-is off. Early refusals and failed jobs retain their existing error responses.
-The original generation result is preserved; receipts are appended after it.
+- Flow's **Account details** menu shows current Flow credits and refresh wording.
+- Follow its credits link to **Google One → Google Flow activity** for balances,
+  charges and refunds. The workflow verifies account identity, pagination and dates,
+  and reports charged/refunded/net separately. Recent rows are not automatically
+  treated as a complete 30-day history.
 
-Optionally set `GMP_FLOW_DAILY_BUDGET` to a positive integer. Example:
+The Claude command is included in `.claude/commands/gemini-usage.md` for this
+checkout; copy it into another project's or your personal `.claude/commands/`
+directory to use it elsewhere. For Codex, install `skills/gemini-usage` into your
+user skills directory or a project's `.agents/skills/`. MCP installation alone
+does not install a client slash command. See
+[Claude commands](https://code.claude.com/docs/en/skills) and
+[Codex skills](https://learn.chatgpt.com/docs/build-skills).
 
-```text
-[Flow local only | Job: ~20 cr | 24h spent: ~20 cr | 30d spent: ~60 cr | 24h budget left: ~30/50 cr]
-```
+### MCP / terminal balance queries
 
-`~` marks an estimate. Windows are rolling 24 hours and 30 days, not calendar
-periods. Totals cover this server's Flow ledger (`GMP_FLOW_LEDGER` or
-`~/.gemini_media_pass/flow_spend.jsonl`) only; web UI spending and other machines
-are excluded. Missing history reports usage unknown, never a verified zero.
-Unreadable history produces an unavailable notice; malformed records are skipped
-with a notice. Image calls, image quota limits, and the host chat model's tokens
-are not tracked by this ledger and are deliberately omitted. No prompts or paths
-are included in the compact receipt.
-
-Receipt formatting is local Python with no extra LLM or Flow API call. Its text
-still consumes context tokens when returned to an AI client. Prefer an on-demand
-receipt at the end of a batch or before a costly render; enable every-call
-receipts when you are actively budgeting. A 10% alert requires an explicit budget
-and persistent threshold tracking; this feature does not infer that threshold
-from chat tokens or implement automatic alerts. Major code updates alone do not
-change the Flow budget. Existing detailed generation output remains unchanged,
-so enabling receipts adds text rather than reducing it.
-
-
-### On-demand command: gemini-usage
-
-After installing the updated package, run:
+`gemini_usage()` queries the live balance via gflow's selected signed-in profile,
+then separately displays partial local spend. It bypasses the daily tracker cache.
+When browser control is available, use the skill for provider transaction history;
+the CLI does **not** scrape Google One or attach to your everyday Chrome session.
 
 ```sh
-gemini-usage
+gemini-usage                         # live balance attempt + local spend
 # Equivalent:
 python -m gemini_media_pass_mcp.receipts
-# Optional personal budget:
-gemini-usage --daily-budget 50
+gemini-usage --profile work          # named gflow profile
+gemini-usage --account me@example.com # withhold balance if the CLI uses a different account
+gemini-usage --local-only            # explicit offline ledger-only mode
+gemini-usage --daily-budget 50       # optional personal target, NOT an allowance
 ```
 
-**Claude Code:** this checkout includes `.claude/commands/gemini-usage.md`, so
-`/gemini-usage` is available when working here. For other projects, copy that
-command file into the project's `.claude/commands/` directory (or your personal
-`~/.claude/commands/`). An MCP server connection alone does not install it.
-See [Claude Code custom commands](https://code.claude.com/docs/en/skills).
+The CLI needs a current `gflow-cli` and a signed-in gflow profile. A regular
+Chrome login is separate; if the CLI is unavailable, use the skill's browser
+workflow. Every live report identifies the CLI account; `--account` (MCP:
+`account_email`) checks the expected email and withholds a mismatched balance.
+The local ledger is not account-filtered and must not be attributed to the live
+account without separate evidence. gflow's migrated-host balance support is documented in its
+[known issues](https://github.com/ffroliva/gflow-cli/blob/develop/KNOWN_ISSUES.md);
+older releases can fail despite a valid session. Compare reported balances to the
+account menu rather than assuming a successful JSON response proves correctness.
 
-**Codex:** install the bundled `skills/gemini-usage` folder into your user skills
-location, or a project's `.agents/skills/`, then invoke `$gemini-usage` or choose
-it from `/skills`. This is the Codex skill equivalent; `/gemini-usage` is not a
-universal MCP slash command. See [Codex skills](https://learn.chatgpt.com/docs/build-skills).
+### Local receipts and batch policy
 
-The bundled workflow recommends `include_credit_receipt=False` during the batch,
-then one `flow_credit_receipt()` call after all requested generations finish.
-You can also say: "Generate these clips, then show Gemini usage once at the end."
-Batch completion is determined by the agent/user; the server has no automatic
-batch-boundary event. No background hook, timer, or extra report runs per job.
-The command and skill report local Flow credits only, not Gemini quota or chat
-tokens. They use the server's ledger when called through MCP and the current
-machine's ledger when run as a CLI; those may differ for remote MCP servers.
+Keep `include_credit_receipt=False` during a batch and request `gemini_usage()`
+or the browser skill once after all jobs finish. Batch boundaries are determined
+by the agent/user; the server has no automatic batch completion event.
+
+`flow_credit_receipt()` remains an explicitly local-only summary, and optional
+per-job footers remain available with `include_credit_receipt=True` or
+`GMP_CREDIT_RECEIPTS=on` (default off). These footers make no provider query.
+`GMP_FLOW_DAILY_BUDGET` is an optional positive personal rolling-24h budget.
+
+Local windows are rolling 24h/30d. The ledger (`GMP_FLOW_LEDGER` or
+`~/.gemini_media_pass/flow_spend.jsonl`) excludes web UI/other-machine spending.
+Missing history is unknown; `~` marks estimates. Malformed/unreadable history is
+reported. Local records cannot establish the account balance or full activity.
+Flow credits do not measure Gemini model tokens, image quotas, or chat token usage.
+
+Live balance queries are read-only and do not generate media. They can make a
+network request or open gflow's browser; the agent browser workflow reads account
+pages. Report text and skill invocation still add context tokens to the AI client.
