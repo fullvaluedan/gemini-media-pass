@@ -25,7 +25,7 @@ def credit_receipt(cost_this_call: Optional[int] = None, *, estimated: bool = Fa
     try:
         lines = ledger.ledger_path().read_text(encoding="utf-8").splitlines()
     except FileNotFoundError:
-        lines = []
+        return "[Flow local usage unknown: no ledger history on this machine]"
     except (OSError, UnicodeError):
         return "[Flow local receipt unavailable: ledger unreadable]"
     skipped = 0
@@ -92,3 +92,22 @@ def register_receipt_tools(mcp):
             return credit_receipt(daily_budget=budget)
         except ValueError:
             return "Error: daily_budget / GMP_FLOW_DAILY_BUDGET must be a positive integer."
+
+
+def main():
+    """Read-only gemini-usage command; no server or provider connection required."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Show local Flow usage (24h/30d), without provider calls.")
+    parser.add_argument("--daily-budget", type=int, help="Personal rolling-24h credit budget, not account balance")
+    args = parser.parse_args()
+    try:
+        raw_budget = os.environ.get("GMP_FLOW_DAILY_BUDGET")
+        budget = args.daily_budget if args.daily_budget is not None else (int(raw_budget) if raw_budget else None)
+        print(credit_receipt(daily_budget=budget))
+    except ValueError:
+        parser.error("daily budget must be a positive integer")
+
+
+if __name__ == "__main__":
+    main()

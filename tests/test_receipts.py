@@ -54,9 +54,20 @@ def test_bad_records_are_visible_but_do_not_break_generation(history):
 
 def test_missing_and_unreadable_history(history):
     history.unlink()
-    assert "local only" in receipts.credit_receipt()
+    assert "usage unknown" in receipts.credit_receipt()
+    assert "0 cr" not in receipts.credit_receipt()
     history.mkdir()
     assert "unavailable" in receipts.credit_receipt()
+
+
+def test_usage_cli(history, monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["gemini-usage", "--daily-budget", "50"])
+    receipts.main()
+    assert "40/50 cr" in capsys.readouterr().out
+    monkeypatch.setattr("sys.argv", ["gemini-usage", "--daily-budget", "0"])
+    with pytest.raises(SystemExit) as error:
+        receipts.main()
+    assert error.value.code == 2
 
 
 def test_invalid_budget_does_not_replace_result(history, monkeypatch):

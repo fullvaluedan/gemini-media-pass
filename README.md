@@ -232,7 +232,7 @@ Tests never touch the network, `agy` or `gflow`.
 MIT. See [LICENSE](LICENSE).
 
 
-## Optional compact credit receipts
+## Usage after a batch (recommended)
 
 Call `flow_credit_receipt()` for a compact local spend summary without fetching a
 provider balance. `flow_credit_receipt(daily_budget=50)` also shows the remainder
@@ -255,7 +255,7 @@ Optionally set `GMP_FLOW_DAILY_BUDGET` to a positive integer. Example:
 `~` marks an estimate. Windows are rolling 24 hours and 30 days, not calendar
 periods. Totals cover this server's Flow ledger (`GMP_FLOW_LEDGER` or
 `~/.gemini_media_pass/flow_spend.jsonl`) only; web UI spending and other machines
-are excluded. Missing history means no recorded spend, not verified zero usage.
+are excluded. Missing history reports usage unknown, never a verified zero.
 Unreadable history produces an unavailable notice; malformed records are skipped
 with a notice. Image calls, image quota limits, and the host chat model's tokens
 are not tracked by this ledger and are deliberately omitted. No prompts or paths
@@ -269,3 +269,36 @@ and persistent threshold tracking; this feature does not infer that threshold
 from chat tokens or implement automatic alerts. Major code updates alone do not
 change the Flow budget. Existing detailed generation output remains unchanged,
 so enabling receipts adds text rather than reducing it.
+
+
+### On-demand command: gemini-usage
+
+After installing the updated package, run:
+
+```sh
+gemini-usage
+# Equivalent:
+python -m gemini_media_pass_mcp.receipts
+# Optional personal budget:
+gemini-usage --daily-budget 50
+```
+
+**Claude Code:** this checkout includes `.claude/commands/gemini-usage.md`, so
+`/gemini-usage` is available when working here. For other projects, copy that
+command file into the project's `.claude/commands/` directory (or your personal
+`~/.claude/commands/`). An MCP server connection alone does not install it.
+See [Claude Code custom commands](https://code.claude.com/docs/en/skills).
+
+**Codex:** install the bundled `skills/gemini-usage` folder into your user skills
+location, or a project's `.agents/skills/`, then invoke `$gemini-usage` or choose
+it from `/skills`. This is the Codex skill equivalent; `/gemini-usage` is not a
+universal MCP slash command. See [Codex skills](https://learn.chatgpt.com/docs/build-skills).
+
+The bundled workflow recommends `include_credit_receipt=False` during the batch,
+then one `flow_credit_receipt()` call after all requested generations finish.
+You can also say: "Generate these clips, then show Gemini usage once at the end."
+Batch completion is determined by the agent/user; the server has no automatic
+batch-boundary event. No background hook, timer, or extra report runs per job.
+The command and skill report local Flow credits only, not Gemini quota or chat
+tokens. They use the server's ledger when called through MCP and the current
+machine's ledger when run as a CLI; those may differ for remote MCP servers.
