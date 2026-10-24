@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 from . import ledger
+from .receipts import append_credit_footer, register_receipt_tools
 from .guardrails import apply_guardrails, explain_flow_error, third_party_names, third_party_warning
 
 DEFAULT_OUTPUT_DIR = str(Path.home() / "Videos" / "Flow")
@@ -63,6 +64,7 @@ def _find_gflow() -> List[str]:
     if exe:
         return [exe]
     candidates = [
+        os.path.expanduser("~/.local/bin/gflow.exe"),
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python311\Scripts\gflow.exe"),
         os.path.expanduser(r"~\AppData\Local\Programs\Python\Python312\Scripts\gflow.exe"),
         os.path.expanduser("~/.local/bin/gflow"),
@@ -270,7 +272,8 @@ def register_flow_tools(mcp):
         max_credits: Optional[int] = None,
         guardrails: bool = False,
         spoken_line: Optional[str] = None,
-        allow_names: bool = False
+        allow_names: bool = False,
+        include_credit_receipt: Optional[bool] = None
     ) -> str:
         if not allow_names:
             names = third_party_names(prompt)
@@ -367,7 +370,7 @@ def register_flow_tools(mcp):
                 + (f"{plain}\n\n" if plain else "")
                 + f"**gflow said:**\n```\n{(err_text or out_text)[-1500:]}\n```\n"
             )
-        ledger.log_request("flow_generate_video", chosen_model, prompt, total_cost, "ok", out_text)
+        receipt_entry = ledger.log_request("flow_generate_video", chosen_model, prompt, total_cost, "ok", out_text)
 
         spend_info = await CreditTracker.record_real_spend(total_cost)
         curr_credits = spend_info.get("current", 0)
@@ -425,7 +428,7 @@ def register_flow_tools(mcp):
 
         files_text = "\n\n".join(file_info_blocks) if file_info_blocks else f"- Saved to `{norm_out_dir}`"
 
-        return (
+        result = (
             f"{milestone_banner}"
             f"### 🎬 Google Flow Video Generated Successfully!\n\n"
             f"#### 💳 Daily Credit Tracker Ledger\n"
@@ -442,6 +445,9 @@ def register_flow_tools(mcp):
             f"{files_text}\n"
         )
 
+        return append_credit_footer(result, receipt_entry["credits"],
+                                    estimated=receipt_entry["estimated"], enabled=include_credit_receipt)
+
     @mcp.tool(
         name="flow_extend_video",
         description="Extend an existing Google Flow video by an extra 8 seconds with motion and audio continuity."
@@ -451,7 +457,8 @@ def register_flow_tools(mcp):
         prompt: str,
         project_id: str,
         orientation: str = "vertical",
-        output_file: Optional[str] = None
+        output_file: Optional[str] = None,
+        include_credit_receipt: Optional[bool] = None
     ) -> str:
         aspect = "9:16" if "vert" in orientation.lower() or "9:16" in orientation else "16:9"
 
@@ -477,13 +484,13 @@ def register_flow_tools(mcp):
             plain = explain_flow_error(out_text + "\n" + err_text)
             ledger.log_request("flow_extend_video", "extend", prompt, 20, "failed", note=(plain or "")[:120])
             return f"### Extend video failed\n\n{plain or ''}\n\n```\n{(err_text or out_text)[-1500:]}\n```"
-        ledger.log_request("flow_extend_video", "extend", prompt, 20, "ok", out_text)
+        receipt_entry = ledger.log_request("flow_extend_video", "extend", prompt, 20, "ok", out_text)
 
         spend_info = await CreditTracker.record_real_spend(20)
         curr_credits = spend_info.get("current", 0)
         pct_left = spend_info.get("pct_remaining", 0.0)
 
-        return (
+        result = (
             f"### 🎬 Video Extended Successfully (+8 Seconds)!\n\n"
             f"#### 💳 Daily Credit Tracker Ledger\n"
             f"- **Operation Cost:** -20 credits\n"
@@ -491,6 +498,9 @@ def register_flow_tools(mcp):
             f"**Continuation Prompt:** \"{prompt}\"\n"
             f"**Aspect Ratio:** `{aspect}`\n"
         )
+
+        return append_credit_footer(result, receipt_entry["credits"],
+                                    estimated=receipt_entry["estimated"], enabled=include_credit_receipt)
 
     @mcp.tool(
         name="flow_list_models",
@@ -637,6 +647,7 @@ def register_flow_tools(mcp):
 
     from .doctor import register_doctor_tools
     register_doctor_tools(mcp)
+    register_receipt_tools(mcp)
 
 
 def music_command(prompt: str, duration: int) -> List[str]:

@@ -59,7 +59,7 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (27)
+## Tools (29)
 
 ### Understanding
 | Tool | Parameters | What it does |
@@ -230,3 +230,76 @@ Tests never touch the network, `agy` or `gflow`.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Live usage after a batch
+
+Use `/gemini-usage` in Claude Code or the bundled `gemini-usage` skill in Codex
+(`$gemini-usage` / `/skills`). The workflow checks the signed-in account:
+
+- Flow's **Account details** menu shows current Flow credits and refresh wording.
+- Follow its credits link to **Google One → Google Flow activity** for balances,
+  charges and refunds. The workflow verifies account identity, pagination and dates,
+  and reports charged/refunded/net separately. Recent rows are not automatically
+  treated as a complete 30-day history.
+
+The Claude command is included in `.claude/commands/gemini-usage.md` for this
+checkout; copy it into another project's or your personal `.claude/commands/`
+directory to use it elsewhere. For Codex, install `skills/gemini-usage` into your
+user skills directory or a project's `.agents/skills/`. MCP installation alone
+does not install a client slash command. See
+[Claude commands](https://code.claude.com/docs/en/skills) and
+[Codex skills](https://learn.chatgpt.com/docs/build-skills).
+
+### MCP / terminal balance queries
+
+`gemini_usage()` queries the live balance via gflow's selected signed-in profile,
+then separately displays partial local spend. It bypasses the daily tracker cache.
+When browser control is available, use the skill for provider transaction history;
+the CLI does **not** scrape Google One or attach to your everyday Chrome session.
+
+```sh
+gemini-usage                         # live balance attempt + local spend
+# Equivalent:
+python -m gemini_media_pass_mcp.receipts
+gemini-usage --profile work          # named gflow profile
+gemini-usage --account me@example.com # withhold balance if the CLI uses a different account
+gemini-usage --local-only            # explicit offline ledger-only mode
+gemini-usage --daily-budget 50       # optional personal target, NOT an allowance
+```
+
+The CLI needs a current `gflow-cli` and a signed-in gflow profile. A regular
+Chrome login is separate; if the CLI is unavailable, use the skill's browser
+workflow. Every live report identifies the CLI account; `--account` (MCP:
+`account_email`) checks the expected email and withholds a mismatched balance.
+The local ledger is not account-filtered and must not be attributed to the live
+account without separate evidence. gflow's migrated-host balance support is documented in its
+[known issues](https://github.com/ffroliva/gflow-cli/blob/develop/KNOWN_ISSUES.md);
+older releases can fail despite a valid session. Compare reported balances to the
+account menu rather than assuming a successful JSON response proves correctness.
+
+Set `GMP_FLOW_ACCOUNT` in the environment or `~/.gemini_media_pass.env` to remember
+your expected account. `--account` / `account_email` overrides this default.
+This selects an account check, not a login: choose a matching gflow profile or
+browser account before reporting usage. Keep personal email settings out of Git.
+
+### Local receipts and batch policy
+
+Keep `include_credit_receipt=False` during a batch and request `gemini_usage()`
+or the browser skill once after all jobs finish. Batch boundaries are determined
+by the agent/user; the server has no automatic batch completion event.
+
+`flow_credit_receipt()` remains an explicitly local-only summary, and optional
+per-job footers remain available with `include_credit_receipt=True` or
+`GMP_CREDIT_RECEIPTS=on` (default off). These footers make no provider query.
+`GMP_FLOW_DAILY_BUDGET` is an optional positive personal rolling-24h budget.
+
+Local windows are rolling 24h/30d. The ledger (`GMP_FLOW_LEDGER` or
+`~/.gemini_media_pass/flow_spend.jsonl`) excludes web UI/other-machine spending.
+Missing history is unknown; `~` marks estimates. Malformed/unreadable history is
+reported. Local records cannot establish the account balance or full activity.
+Flow credits do not measure Gemini model tokens, image quotas, or chat token usage.
+
+Live balance queries are read-only and do not generate media. They can make a
+network request or open gflow's browser; the agent browser workflow reads account
+pages. Report text and skill invocation still add context tokens to the AI client.

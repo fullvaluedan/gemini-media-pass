@@ -52,6 +52,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 
 [project.scripts]
+gemini-usage = "gemini_media_pass_mcp.receipts:main"
 gemini-media-pass = "gemini_media_pass_mcp.server:main"
 gemini-media-pass-mcp = "gemini_media_pass_mcp.server:main"
 gemini-media-pass-login = "gemini_media_pass_mcp.auth:main"
