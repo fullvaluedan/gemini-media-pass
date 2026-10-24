@@ -1,4 +1,6 @@
 import asyncio
+import json
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -92,3 +94,39 @@ def test_mcp_and_cli_use_live_report(monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["gemini-usage"])
     receipts.main()
     assert "Flow balance: 50 cr" in capsys.readouterr().out
+
+
+def test_image_catalog_counts_unique_assets_in_rolling_windows():
+    now = datetime(2026, 10, 24, 5, tzinfo=timezone.utc)
+    def row(asset, hours, profile="work"):
+        return json.dumps({"media_id": asset, "profile": profile,
+                           "created_at": (now - timedelta(hours=hours)).isoformat()})
+    body = "\n".join([row("a", .5), row("a", .5), row("b", 2), row("c", 25),
+                       row("other", .5, "other"), row("future", -1), "null"])
+    result = usage.image_catalog_summary(body, "work", now=now)
+    assert "1 in rolling 1h; 2 in rolling 24h" in result
+    assert "3 invalid/unscoped rows excluded" in result
+    assert "not verified generation-call counts" in result
+
+
+def test_naive_image_timestamp_is_not_assumed_to_be_utc():
+    body = json.dumps({"media_id": "a", "profile": "work", "created_at": "2026-10-24T05:00:00"})
+    assert "1 invalid/unscoped" in usage.image_catalog_summary(body, "work")
+
+
+def test_image_activity_uses_resolved_profile_and_no_generation_commands(monkeypatch):
+    calls = []
+    async def run(cmd, timeout):
+        calls.append((cmd, timeout))
+        return 0, b"", b""
+    monkeypatch.setattr(flow, "_find_gflow", lambda: ["gflow"])
+    monkeypatch.setattr(flow, "_run", run)
+    result = asyncio.run(usage.image_activity("work"))
+    assert calls == [(["gflow", "data", "list", "images", "--profile", "work", "--limit", "1000", "--json"], 30)]
+    assert "0 in rolling 1h" in result
+    assert "unavailable" in asyncio.run(usage.image_activity(None))
+
+
+def test_catalog_cap_is_explicit():
+    row = json.dumps({"media_id": "a", "profile": "work", "created_at": datetime.now(timezone.utc).isoformat()})
+    assert "latest 1 rows only" in usage.image_catalog_summary(row, "work", limit=1)

@@ -11,6 +11,10 @@ https://one.google.com/ai/activity. Verify both pages use the same account. Read
 balances and the transaction table, including pagination/date coverage. Report
 charged credits, refunds, net usage, last activity and when checked. Do not infer
 30-day coverage, reset timezone or spend from the balance alone. No media generation.
+For image/reset questions, read any separate daily-credit bucket and reset text.
+Report absent image quotas or reset timestamps as not exposed; do not assume an
+hourly image allowance or universal midnight. Catalog asset counts may include
+uploads and cannot establish remaining image generations.
 
 Without browser control, call the `gemini_usage` MCP tool or installed
 `gemini-usage` CLI. If live access fails, report it explicitly and ask for browser

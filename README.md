@@ -300,6 +300,29 @@ Missing history is unknown; `~` marks estimates. Malformed/unreadable history is
 reported. Local records cannot establish the account balance or full activity.
 Flow credits do not measure Gemini model tokens, image quotas, or chat token usage.
 
+### Image activity and reset times
+
+The live report also reads gflow's selected-profile image catalog (up to 1000
+newest rows) and counts distinct assets by their timestamps over rolling 1h/24h.
+These are **recorded assets**, potentially including uploads/imports, not a
+verified number of generation calls or all-account image usage. Other devices or
+uncataloged assets may be missing. Counts do not reveal remaining image quota.
+
+The browser workflow reports the separate daily Flow bucket and reset wording
+when Google displays them. The gflow balance response currently does not provide
+that bucket, its reset timestamp, or an image allowance/reset timer; the CLI marks
+these unavailable instead of substituting midnight or estimating from credits.
+
+According to [Google Flow Help](https://support.google.com/flow/answer/16526234?hl=en),
+the daily 50-credit refresh is triggered by the first generation, unused daily
+credits do not roll over, and monthly credits refresh on the billing cycle.
+That does not establish a universal midnight or a timezone for an unlabeled clock
+time. Preserve the page's wording; only convert an explicitly timezone-aware reset
+timestamp or show a countdown when Google provides one. Flow's
+[rate limits are dynamically tuned](https://support.google.com/flow/answer/16353333?hl=en);
+an hourly image allowance cannot be inferred from daily Flow credits or limits
+published for a different product such as Gemini Apps or Google Search.
+
 Live balance queries are read-only and do not generate media. They can make a
 network request or open gflow's browser; the agent browser workflow reads account
 pages. Report text and skill invocation still add context tokens to the AI client.
