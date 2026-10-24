@@ -31,6 +31,29 @@ def get_bridge_url() -> str:
     port would receive every prompt. Example: BRIDGE_URL=http://127.0.0.1:8000/v1/chat/completions"""
     return os.environ.get("BRIDGE_URL", "").strip()
 
+def get_default_tier() -> str:
+    """The default model tier ('flash' or 'pro'). Defaults to 'flash' for 97% cost savings."""
+    tier = os.environ.get("GMP_DEFAULT_TIER", "flash").strip().lower()
+    return "pro" if tier == "pro" else "flash"
+
+def get_video_tier() -> str:
+    """The model tier for video analysis. Defaults to GMP_VIDEO_TIER, or falls back to GMP_DEFAULT_TIER ('flash')."""
+    tier = os.environ.get("GMP_VIDEO_TIER", "").strip().lower()
+    return "pro" if tier == "pro" else ("flash" if tier == "flash" else get_default_tier())
+
+def resolve_model_name(tier: Optional[str] = None, default_to_video: bool = False) -> str:
+    """
+    Resolves the internal model identifier string ('gemini-3.8-flash-high' or 'gemini-3.1-pro-high')
+    based on the requested tier ('flash' or 'pro') or environment settings.
+    """
+    t = (tier.strip().lower() if tier else None)
+    if not t:
+        t = get_video_tier() if default_to_video else get_default_tier()
+
+    if t == "pro":
+        return "gemini-3.1-pro-high"
+    return "gemini-3.8-flash-high"
+
 def find_agy_binary() -> Optional[str]:
     """
     Locates the Google Antigravity (agy) executable across Windows, macOS, and Linux.

@@ -59,18 +59,63 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (27)
+## Tools (28)
 
-### Understanding
+### Understanding & Help
 | Tool | Parameters | What it does |
 |---|---|---|
-| `gemini_video` | `video_path`, `question` | Watch and analyze a video file |
-| `gemini_vision` | `image_path`, `question` | Inspect an image or screenshot |
-| `gemini_audio` | `audio_path`, `question` | Transcribe and analyze audio |
-| `gemini_read_document` | `file_path`, `question` | Read a large document, log or codebase file |
-| `gemini_multimodal_inspect` | `file_path`, `question` | Any file type |
-| `ask_gemini_pro` | `prompt` | Deep reasoning or a second opinion |
-| `ask_gemini_flash` | `prompt` | Fast extraction and batch work |
+| gemini_media_pass_guide | 	opic ('overview', 'models', 'billing', 'settings', 'workflows', 'all') | **Interactive help & settings guide**. Explains Flash vs Pro, subscription vs API billing, and video workflows. |
+| gemini_video | ideo_path, question, model_tier ('flash' or 'pro') | Watch and analyze a video file. Defaults to lash for 97% savings; set model_tier='pro' for deep critique. |
+| gemini_vision | image_path, question, model_tier | Inspect an image, diagram or screenshot. |
+| gemini_audio | udio_path, question, model_tier | Transcribe and analyze audio (dialogue, tone, background sounds). |
+| gemini_read_document | ile_path, question, model_tier | Read a large document, log or codebase file using the 2M token window. |
+| gemini_multimodal_inspect | ile_path, question, model_tier | Universal inspector for any media file type. |
+| sk_gemini_pro | prompt | Deep reasoning or a second opinion. |
+| sk_gemini_flash | prompt | Fast extraction, summarization, and batch work. |
+
+## ⚡ Flash vs. Pro: Cost & Quality Optimization (Save ~97%)
+
+Google Gemini models process video by natively tokenizing frames (~258 tokens per frame at ~1 fps) with audio synchronization.
+
+### Market Cost Comparison (5-Minute Video / ~300 Frames)
+
+| Provider | Model | Video Ingestion Method | Input Token / Min Cost | Approx. 5-Min Video Cost | Best For |
+|---|---|---|---|---|---|
+| **Google** | **Gemini 1.5 Flash** | **Native video upload** | **.075 / 1M tokens** | **~.007 (< 1 cent)** | **Timestamp indexing, scene retrieval, B-roll sourcing (97% cheaper)** |
+| **Google** | **Gemini 1.5 Pro** | **Native video upload** | **.50 - .00 / 1M tokens** | **~.35 - .70** | Deep thematic critique, narrative subtext, subtle animation comparisons |
+| **Meta** | **SAM 2 (Segment Anything)**| Video Object Tracker | Free (self-hosted) | **.00** | Pixel-level object segmentation, rotoscoping, tracking moving subjects |
+| **Meta** | **Llama 3.2 Vision (11B/90B)** | Open-Weights Vision LLM | Free self-hosted / ~.10/1M | **~.01 - .03** | Local private document/image reading on your GPU |
+| **Alibaba**| **Qwen2-VL (7B/72B)** | Open-Weights Vision-Language | Free self-hosted / ~.20/1M | **~.02 - .05** | High-resolution open-source video comprehension |
+| **OpenAI** | **GPT-4o mini** | Sampled base64 frames | .15 / 1M tokens | **~.015 - .02** | Cheap conversational vision; lower spatial detail on small text |
+| **OpenAI** | **GPT-4o** | Sampled base64 frames | .50 / 1M tokens | **~.25 - .30** | High-precision visual reasoning and diagrams |
+| **Anthropic**| **Claude 3.5 Sonnet** | Sampled base64 frames | .00 / 1M tokens | **~.50 - .90** | UI-to-code, technical diagrams, deep text/chart reasoning |
+| **Twelve Labs** | **Marengo 2.6 / Pegasus** | Specialized Video Model | .05 / video minute | **~.25** | Dedicated natural language video timestamp search |
+
+### How to Select Models & Change Settings
+
+You have 3 easy ways to control model tiers:
+
+1. **Per Tool Call (On the Fly)**:
+   Pass model_tier='flash' or model_tier='pro' directly:
+   gemini_video('D:/videos/simpsons_s04e12.mp4', 'Find the timestamp where the monorail arrives', model_tier='flash')
+
+2. **Global Environment Configuration (.env)**:
+   In your .env or ~/.gemini_media_pass.env file:
+   GMP_DEFAULT_TIER=flash
+   GMP_VIDEO_TIER=flash
+
+3. **Interactive Help & Options Guide**:
+   Call the built-in MCP tool anytime:
+   gemini_media_pass_guide(topic='all')
+   *(Specific topics: 'overview', 'models', 'billing', 'settings', 'workflows')*
+
+### Subscription Credits vs. Google Cloud API Credits
+
+- **Antigravity CLI (gy)**: When gy is installed and authenticated, analysis calls route through your Google AI subscription flat fee and cost **.00 in Google Cloud API credits**.
+- **Google Flow (Veo)**: Connects to your Google AI Pro/Ultra subscription pool via python -m gemini_media_pass_mcp.auth.
+- **Google Cloud API Key (GEMINI_API_KEY)**: Only acts as a pay-as-you-go fallback if gy is not present or times out. To strictly prevent any surprise API billing on your Google Cloud invoice, remove or comment out GEMINI_API_KEY in ~/.gemini_media_pass.env.
+
+---
 
 ### Generation
 | Tool | Parameters | What it does |
