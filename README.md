@@ -59,7 +59,7 @@ Limits depend on your Google plan and change often, so this README does not repe
 - **Voice a script.** Gemini TTS with five voices, or free edge-tts neural voices when no API key is set.
 - **Sketch a UI.** "Generate a mobile booking screen in my Stitch project."
 
-## Tools (27)
+## Tools (28)
 
 ### Understanding
 | Tool | Parameters | What it does |
@@ -230,3 +230,42 @@ Tests never touch the network, `agy` or `gflow`.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+
+## Optional compact credit receipts
+
+Call `flow_credit_receipt()` for a compact local spend summary without fetching a
+provider balance. `flow_credit_receipt(daily_budget=50)` also shows the remainder
+of **your own rolling-24h budget**, not Google's allowance or reset schedule.
+Use `flow_get_credits(force_refresh=True)` when you need a provider balance
+(which may be unavailable on migrated accounts).
+
+To attach a receipt to a successful `flow_generate_video` or `flow_extend_video`
+call, pass `include_credit_receipt=True`. Set `GMP_CREDIT_RECEIPTS=on` to opt in
+by default; `include_credit_receipt=False` overrides it for one call. The default
+is off. Early refusals and failed jobs retain their existing error responses.
+The original generation result is preserved; receipts are appended after it.
+
+Optionally set `GMP_FLOW_DAILY_BUDGET` to a positive integer. Example:
+
+```text
+[Flow local only | Job: ~20 cr | 24h spent: ~20 cr | 30d spent: ~60 cr | 24h budget left: ~30/50 cr]
+```
+
+`~` marks an estimate. Windows are rolling 24 hours and 30 days, not calendar
+periods. Totals cover this server's Flow ledger (`GMP_FLOW_LEDGER` or
+`~/.gemini_media_pass/flow_spend.jsonl`) only; web UI spending and other machines
+are excluded. Missing history means no recorded spend, not verified zero usage.
+Unreadable history produces an unavailable notice; malformed records are skipped
+with a notice. Image calls, image quota limits, and the host chat model's tokens
+are not tracked by this ledger and are deliberately omitted. No prompts or paths
+are included in the compact receipt.
+
+Receipt formatting is local Python with no extra LLM or Flow API call. Its text
+still consumes context tokens when returned to an AI client. Prefer an on-demand
+receipt at the end of a batch or before a costly render; enable every-call
+receipts when you are actively budgeting. A 10% alert requires an explicit budget
+and persistent threshold tracking; this feature does not infer that threshold
+from chat tokens or implement automatic alerts. Major code updates alone do not
+change the Flow budget. Existing detailed generation output remains unchanged,
+so enabling receipts adds text rather than reducing it.
